@@ -1,0 +1,27 @@
+{
+  "name": "sistema-contable-inteligente",
+  "version": "1.0.0",
+  "description": "Sistema contable completo con ChatBot inteligente usando Claude AI",
+  "main": "backend/src/index.js",
+  "scripts": {
+    "dev": "cd backend && npm run dev",
+    "start": "cd backend && npm start",
+    "build": "cd backend && npm run build",
+    "test": "cd backend && npm test",
+    "setup-sharepoint": "cd connectors/sharepoint && npm install && npm run sync-list",
+    "sync-specs": "cd connectors/sharepoint && npm run sync",
+    "db:migrate": "cd database && npm run migrate"
+  },
+  "keywords": ["contabilidad", "chatbot", "claude", "accounting"],
+  "author": "",
+  "license": "MIT",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "connectors/sharepoint",
+    "connectors/claude"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}

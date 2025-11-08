@@ -1,0 +1,17 @@
+{
+  "name": "sharepoint-connector",
+  "version": "1.0.0",
+  "description": "Conector simplificado para SharePoint - Trimpulso",
+  "main": "sync.js",
+  "scripts": {
+    "validate": "node validate.js",
+    "sync": "node validate.js && node sync.js",
+    "list": "node validate.js && node sync.js"
+  },
+  "keywords": ["sharepoint", "microsoft365", "trimpulso"],
+  "author": "Trimpulso Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
