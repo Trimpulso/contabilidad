@@ -1,114 +1,226 @@
-# 📊 Sistema Contable Inteligente# Sistema Contable Inteligente 📊
+# 📊 Sistema Contable Inteligente# 📊 Sistema Contable Inteligente# Sistema Contable Inteligente 📊
 
 
 
-Dashboard completo de contabilidad con análisis en tiempo real, seguridad avanzada y KPIs de procesos.**Dashboard contable full-stack con API REST, autenticación JWT y sincronización desde SharePoint.**
+Dashboard de contabilidad con análisis en tiempo real, detección de fraude y KPIs de procesos.
 
 
 
-**🌐 Acceso en vivo:** https://trimpulso.github.io/Contabilidad/[![Dashboard](https://img.shields.io/badge/Dashboard-Online-blue?style=flat-square)](https://trimpulso.github.io/Contabilidad/)
+**🌐 Acceso directo:** https://trimpulso.github.io/Contabilidad/Dashboard completo de contabilidad con análisis en tiempo real, seguridad avanzada y KPIs de procesos.**Dashboard contable full-stack con API REST, autenticación JWT y sincronización desde SharePoint.**
 
-[![API](https://img.shields.io/badge/API-Docs-green?style=flat-square)](https://github.com/Trimpulso/Contabilidad/blob/main/docs/API.md)
 
-[![Dashboard](https://img.shields.io/badge/Dashboard-Online-blue?style=flat-square)](https://trimpulso.github.io/Contabilidad/)[![GitHub](https://img.shields.io/badge/Repo-GitHub-black?style=flat-square)](https://github.com/Trimpulso/Contabilidad)
 
-[![GitHub](https://img.shields.io/badge/Repo-GitHub-black?style=flat-square)](https://github.com/Trimpulso/Contabilidad)[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![Dashboard](https://img.shields.io/badge/Dashboard-Online-blue?style=flat-square)](https://trimpulso.github.io/Contabilidad/)
 
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![GitHub](https://img.shields.io/badge/Repo-GitHub-black?style=flat-square)](https://github.com/Trimpulso/Contabilidad)
 
-## 🎯 Características
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)**🌐 Acceso en vivo:** https://trimpulso.github.io/Contabilidad/[![Dashboard](https://img.shields.io/badge/Dashboard-Online-blue?style=flat-square)](https://trimpulso.github.io/Contabilidad/)
 
-## ✨ Tres Dashboards Integrados
 
-### Frontend
 
-| Dashboard | URL | Función |✅ **Dashboard interactivo** — Gráficos Chart.js (barras, líneas, tortas)  
+## 🎯 Tres Dashboards Funcionales[![API](https://img.shields.io/badge/API-Docs-green?style=flat-square)](https://github.com/Trimpulso/Contabilidad/blob/main/docs/API.md)
+
+
+
+| Dashboard | Descripción | Acceso |[![Dashboard](https://img.shields.io/badge/Dashboard-Online-blue?style=flat-square)](https://trimpulso.github.io/Contabilidad/)[![GitHub](https://img.shields.io/badge/Repo-GitHub-black?style=flat-square)](https://github.com/Trimpulso/Contabilidad)
+
+|-----------|-------------|--------|
+
+| **📊 Principal** | Gráficos interactivos, tabla pivote, exportación PDF/CSV | [Abrir](https://trimpulso.github.io/Contabilidad/index.html) |[![GitHub](https://img.shields.io/badge/Repo-GitHub-black?style=flat-square)](https://github.com/Trimpulso/Contabilidad)[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
+| **🚨 Alertas** | Sistema de seguridad con 8 reglas de detección de fraude | [Abrir](https://trimpulso.github.io/Contabilidad/alertas.html) |
+
+| **📈 KPIs** | Análisis de proveedores y eficiencia de procesos | [Abrir](https://trimpulso.github.io/Contabilidad/kpis.html) |[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
+
+
+## ✨ Características## 🎯 Características
+
+
+
+### Dashboard Principal## ✨ Tres Dashboards Integrados
+
+- 📈 Gráficos interactivos (barras, líneas, tortas)
+
+- 🔄 Tabla pivote dinámica con filtros### Frontend
+
+- 📥 Exportación PDF y CSV
+
+- 🔍 Búsqueda y filtrado en tiempo real| Dashboard | URL | Función |✅ **Dashboard interactivo** — Gráficos Chart.js (barras, líneas, tortas)  
+
+- 📱 Responsive design (mobile-first)
 
 |-----------|-----|---------|✅ **Tabla Pivote** — Análisis dinámico con filas/columnas/valores configurables  
 
-| **Principal** | [Dashboard](https://trimpulso.github.io/Contabilidad/index.html) | Visualización de registros, gráficos, tabla pivote, exportación PDF/CSV |✅ **Exportación PDF** — Genera reportes descargables del dashboard  
+### Dashboard de Alertas
 
-| **Alertas** | [Alertas](https://trimpulso.github.io/Contabilidad/alertas.html) | Sistema de seguridad con 8 reglas de detección de fraude (scoring 0-100) |✅ **Exportación CSV** — Descarga datos filtrados  
+- 🚨 8 reglas de detección de fraude| **Principal** | [Dashboard](https://trimpulso.github.io/Contabilidad/index.html) | Visualización de registros, gráficos, tabla pivote, exportación PDF/CSV |✅ **Exportación PDF** — Genera reportes descargables del dashboard  
 
-| **KPIs** | [KPIs](https://trimpulso.github.io/Contabilidad/kpis.html) | Análisis de proveedores y eficiencia de procesos |✅ **Autenticación** — Login con JWT o modo offline con JSON estático  
+- 📊 Scoring automático (0-100)
 
-✅ **Responsivo** — Mobile-first design con CSS Grid  
+- 🚫 Auto-bloqueo de transacciones sospechosas| **Alertas** | [Alertas](https://trimpulso.github.io/Contabilidad/alertas.html) | Sistema de seguridad con 8 reglas de detección de fraude (scoring 0-100) |✅ **Exportación CSV** — Descarga datos filtrados  
 
-## 🎯 Características Principales
+- 📋 Análisis detallado por DTE
 
-### Backend
+- ⚡ Análisis en tiempo real sin servidor| **KPIs** | [KPIs](https://trimpulso.github.io/Contabilidad/kpis.html) | Análisis de proveedores y eficiencia de procesos |✅ **Autenticación** — Login con JWT o modo offline con JSON estático  
+
+
+
+### Dashboard de KPIs✅ **Responsivo** — Mobile-first design con CSS Grid  
+
+- 💰 Métricas de proveedores
+
+- 📊 Análisis de deuda pendiente## 🎯 Características Principales
+
+- 💹 Proyecciones de flujo de caja
+
+- ⚙️ Eficiencia de procesos### Backend
+
+- 📈 Tendencias de automatización
 
 ### Frontend✅ **API REST** — Express.js con endpoints protegidos  
 
+## 🚀 Cómo Usar
+
 - ✅ Gráficos interactivos (Chart.js: barras, líneas, tortas, rosca)✅ **JWT Auth** — Sistema de sesiones con tokens de 24h  
 
-- ✅ Tabla pivote dinámmica con filtros configurables✅ **Estadísticas** — Resumen, por mes, por proveedor  
+### Acceso Inmediato
 
-- ✅ Exportación PDF y CSV de datos✅ **Filtros** — Por RUT, fecha, estado, con paginación  
-
-- ✅ Acceso sin credenciales (modo guest automático)✅ **Seguridad** — Helmet, CORS, Rate Limiting (100 req/15min)  
-
-- ✅ Diseño responsive mobile-first✅ **In-Memory DB** — Carga datos desde JSON (migrable a SQL)  
+No requiere instalación, credenciales ni servidor. Solo haz click en los links arriba.- ✅ Tabla pivote dinámmica con filtros configurables✅ **Estadísticas** — Resumen, por mes, por proveedor  
 
 
 
-### Backend API### Integración SharePoint
+### Estructura del Proyecto- ✅ Exportación PDF y CSV de datos✅ **Filtros** — Por RUT, fecha, estado, con paginación  
 
-- ✅ 14 endpoints REST (Express.js)✅ **OAuth2** — Autenticación con Azure AD  
 
-- ✅ Autenticación JWT✅ **Microsoft Graph API** — Descarga automática de Excel  
 
-- ✅ Análisis estadístico en tiempo real✅ **Conversión fechas** — Seriales Excel → ISO (YYYY-MM-DD)  
+```- ✅ Acceso sin credenciales (modo guest automático)✅ **Seguridad** — Helmet, CORS, Rate Limiting (100 req/15min)  
 
-- ✅ Sistema de alertas con scoring de riesgo (0-100)✅ **Auto-deploy** — Copia a `docs/data/` para GitHub Pages  
+Contabilidad/
 
-- ✅ Endpoints específicos para KPIs
+├── docs/                      # Frontend (GitHub Pages)- ✅ Diseño responsive mobile-first✅ **In-Memory DB** — Carga datos desde JSON (migrable a SQL)  
 
-## 🚀 Acceso Rápido
+│   ├── index.html            # Dashboard principal
 
-### Seguridad
+│   ├── alertas.html          # Dashboard de alertas
+
+│   ├── kpis.html             # Dashboard de KPIs
+
+│   ├── app-enhanced.js       # Lógica principal### Backend API### Integración SharePoint
+
+│   ├── styles-enhanced.css   # Estilos responsivos
+
+│   └── data/- ✅ 14 endpoints REST (Express.js)✅ **OAuth2** — Autenticación con Azure AD  
+
+│       └── contabilidad.json # Datos de prueba
+
+├── README.md                 # Este archivo- ✅ Autenticación JWT✅ **Microsoft Graph API** — Descarga automática de Excel  
+
+└── .gitignore
+
+```- ✅ Análisis estadístico en tiempo real✅ **Conversión fechas** — Seriales Excel → ISO (YYYY-MM-DD)  
+
+
+
+## 📊 Datos de Prueba- ✅ Sistema de alertas con scoring de riesgo (0-100)✅ **Auto-deploy** — Copia a `docs/data/` para GitHub Pages  
+
+
+
+El sistema incluye 5 registros de prueba:- ✅ Endpoints específicos para KPIs
+
+
+
+**Registros Normales (Aprobados):**## 🚀 Acceso Rápido
+
+- Proveedor A S.A. (RUT: 76192801-K)
+
+- Proveedor B Ltda. (RUT: 77654321-9)### Seguridad
+
+- Proveedor A variante
 
 - ✅ 8 reglas de detección de fraude**🌐 Dashboard en vivo:**  
 
-- ✅ Scoring automático por registro👉 https://trimpulso.github.io/Contabilidad/
+**Registros Críticos (Bloqueados):**
+
+- Empresa Fantasma SpA (Score: 100 - Bloqueado)- ✅ Scoring automático por registro👉 https://trimpulso.github.io/Contabilidad/
+
+- Proveedor Dudoso Ltda. (Score: 95 - Bloqueado)
 
 - ✅ Auto-bloqueo de DTEs sospechosos (score > 50)
 
+## 🛡️ Sistema de Alertas
+
 - ✅ Rate limiting y CORS configurado**� Dashboard de Alertas de Seguridad:**  
+
+### 8 Reglas de Detección
 
 - ✅ Validación de IVA y razón social👉 https://trimpulso.github.io/Contabilidad/alertas.html  
 
-⚠️ **Requiere servidor backend corriendo en local** — Ver [INSTRUCCIONES_DASHBOARD.md](INSTRUCCIONES_DASHBOARD.md)
+| Regla | Descripción | Puntos |
 
-## 🚀 Inicio Rápido
+|-------|-------------|--------|⚠️ **Requiere servidor backend corriendo en local** — Ver [INSTRUCCIONES_DASHBOARD.md](INSTRUCCIONES_DASHBOARD.md)
 
-**�📚 Documentación API:**  
+| Emisor Nuevo | No tiene historial en el sistema | +30 |
 
-### Frontend (GitHub Pages - Sin instalación)👉 [API.md](docs/API.md)
+| Región Sospechosa | Fuera de zonas permitidas | +20 |## 🚀 Inicio Rápido
 
-```bash
+| Monto Anormal | Mayor a $15M | +40 |
 
-# Ya está desplegado en:**📂 Repositorio:**  
+| Recepción Inmediata | Mismo día de emisión | +10 |**�📚 Documentación API:**  
 
-https://trimpulso.github.io/Contabilidad/👉 https://github.com/Trimpulso/Contabilidad
+| Folio Sospechoso | Patrones dudosos | +15 |
+
+| Pendiente + Monto Alto | Estado pendiente con monto elevado | +25 |### Frontend (GitHub Pages - Sin instalación)👉 [API.md](docs/API.md)
+
+| IVA Incorrecto | Cálculo inconsistente | +30 |
+
+| Razón Social Sospechosa | Palabras clave sospechosas | +20 |```bash
 
 
+
+### Scoring# Ya está desplegado en:**📂 Repositorio:**  
+
+- **BAJO (0-20):** ✅ Aprobado
+
+- **MEDIO (21-50):** ⚠️ Requiere revisiónhttps://trimpulso.github.io/Contabilidad/👉 https://github.com/Trimpulso/Contabilidad
+
+- **CRÍTICO (51-100):** 🚫 Auto-bloqueado
+
+
+
+## 🛠 Stack Técnico
 
 # Tres dashboards disponibles:## 📖 Guía de Uso
 
-- Dashboard principal
+- **Frontend:** HTML5, CSS3, JavaScript ES6
 
-- Dashboard de alertas### Dashboard Frontend
+- **Gráficos:** Chart.js 4.4.1- Dashboard principal
+
+- **Exportación:** jsPDF 2.5.1, html2canvas 1.4.1
+
+- **Hosting:** GitHub Pages- Dashboard de alertas### Dashboard Frontend
+
+- **Datos:** JSON estático
 
 - Dashboard de KPIs
 
+## 📝 Licencia
+
 ```#### 1️⃣ Autenticación (Opcional)
+
+MIT
 
 - **Login**: `admin@trimpulso.cl` / `demo123` para usar API
 
+---
+
 ### Backend Local- **Offline**: Click "Continuar sin login" para usar JSON estático
 
-```bash
+**Versión:** 2.1.0 (Frontend Only)  
+
+**Última actualización:** 8 de noviembre de 2025  ```bash
+
+**Autor:** Trimpulso © 2025
 
 cd backend#### 2️⃣ Visualización
 
