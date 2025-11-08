@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Shortcuts - CAI</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .test-result { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #667eea; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de Shortcuts Numéricos</h1>
+    <div id="results"></div>
+
+    <script>
+        // Copiar la función detectIntent del chatbot
+        function detectIntent(text) {
+            const lower = text.toLowerCase().trim();
+
+            // SHORTCUTS POR NÚMERO
+            if (lower === '1' || lower === 'uno') return 'riesgo_critico';
+            if (lower === '2' || lower === 'dos') return 'deuda_total';
+            if (lower === '3' || lower === 'tres') return 'excepciones';
+            if (lower === '4' || lower === 'cuatro') return 'aprobados';
+            if (lower === '5' || lower === 'cinco') return 'listar_proveedores';
+            if (lower === '6' || lower === 'seis') return 'proveedor_info';
+
+            // Intent 1: Riesgo Crítico
+            if (lower.includes('riesgo crítico') || lower.includes('critico') || lower.includes('bloqueado') || lower.includes('peligro') || lower.includes('cuántos en riesgo')) {
+                return 'riesgo_critico';
+            }
+
+            // Intent 2: Deuda Total
+            if (lower.includes('deuda') || lower.includes('pendiente') || lower.includes('debo') || lower.includes('monto total') || lower.includes('cuánto debo')) {
+                return 'deuda_total';
+            }
+
+            // Intent 3: Excepciones
+            if (lower.includes('excepción') || lower.includes('excepcion') || lower.includes('aprobada') || lower.includes('supervisada') || lower.includes('cuántas excepciones')) {
+                return 'excepciones';
+            }
+
+            // Intent 4: Aprobados
+            if (lower.includes('aprobado') || lower.includes('aprob') || lower.includes('cuántas aprobadas') || lower.includes('fueron aprobadas')) {
+                return 'aprobados';
+            }
+
+            // Intent 5: Listar Proveedores
+            if (lower.includes('listar proveedor') || lower.includes('proveedores activos') || lower.includes('cuantos proveedor') || lower.includes('todos los proveedor')) {
+                return 'listar_proveedores';
+            }
+
+            // Intent 6: Info Proveedor
+            if (lower.includes('proveedor') || lower.includes('rut') || lower.includes('empresa') || lower.includes('información') || lower.includes('informacion')) {
+                return 'proveedor_info';
+            }
+
+            // Intent por defecto
+            return 'help';
+        }
+
+        // Test cases
+        const tests = [
+            { input: '1', expected: 'riesgo_critico' },
+            { input: '2', expected: 'deuda_total' },
+            { input: '3', expected: 'excepciones' },
+            { input: '4', expected: 'aprobados' },
+            { input: '5', expected: 'listar_proveedores' },
+            { input: '6', expected: 'proveedor_info' },
+            { input: 'hola', expected: 'help' },
+            { input: '¿Cuántas facturas en riesgo crítico?', expected: 'riesgo_critico' },
+            { input: 'deuda total', expected: 'deuda_total' },
+            { input: 'Proveedor A', expected: 'proveedor_info' }
+        ];
+
+        const resultsDiv = document.getElementById('results');
+
+        tests.forEach(test => {
+            const result = detectIntent(test.input);
+            const pass = result === test.expected;
+            const emoji = pass ? '✅' : '❌';
+            const html = `
+                <div class="test-result" style="border-left-color: ${pass ? '#28a745' : '#dc3545'}">
+                    ${emoji} <strong>"${test.input}"</strong> → 
+                    <code>${result}</code> 
+                    ${!pass ? `<span style="color: red;">(esperaba: ${test.expected})</span>` : ''}
+                </div>
+            `;
+            resultsDiv.innerHTML += html;
+        });
+
+        // Resumen
+        const passCount = tests.filter(t => detectIntent(t.input) === t.expected).length;
+        const summary = `
+            <div style="background: #e3f2fd; padding: 15px; margin-top: 20px; border-radius: 8px;">
+                <h3>📊 Resumen: ${passCount}/${tests.length} tests pasaron ✅</h3>
+            </div>
+        `;
+        resultsDiv.innerHTML += summary;
+    </script>
+</body>
+</html>
