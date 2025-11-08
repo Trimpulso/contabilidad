@@ -11,11 +11,13 @@ const path = require('path');
 
 class SharePointSync {
   constructor(config) {
+    this.config = config;
     this.tenantId = config.tenantId;
     this.clientId = config.clientId;
     this.clientSecret = config.clientSecret;
     this.siteUrl = config.siteUrl;
     this.accessToken = null;
+    this.siteId = null;
   }
 
   /**
@@ -27,12 +29,15 @@ class SharePointSync {
       
       const tokenUrl = `https://login.microsoftonline.com/${this.tenantId}/oauth2/v2.0/token`;
       
-      const response = await axios.post(tokenUrl, null, {
-        params: {
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
-          scope: 'https://graph.microsoft.com/.default',
-          grant_type: 'client_credentials'
+      const params = new URLSearchParams();
+      params.append('client_id', this.clientId);
+      params.append('client_secret', this.clientSecret);
+      params.append('scope', 'https://graph.microsoft.com/.default');
+      params.append('grant_type', 'client_credentials');
+      
+      const response = await axios.post(tokenUrl, params, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
       });
 
@@ -46,6 +51,49 @@ class SharePointSync {
   }
 
   /**
+   * Obtener el Drive (almacenamiento) del usuario buscando por email
+   */
+  async getUserDrive() {
+    if (!this.accessToken) await this.authenticate();
+
+    try {
+      console.log('🔍 Buscando tu OneDrive/SharePoint...');
+      
+      // Buscar el sitio del usuario por email
+      // En SharePoint, el sitio personal normalmente sigue el patrón:
+      // /sites/usuario-email (sin dominio)
+      // Pero usamos Graph API para buscarlo
+      
+      const userEmailLocal = this.config.userEmail.split('@')[0]; // job.llanos
+      
+      // Intentar búsqueda de sitios
+      const searchUrl = `https://graph.microsoft.com/v1.0/sites?search=${userEmailLocal}`;
+      
+      const response = await axios.get(searchUrl, {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.value && response.data.value.length > 0) {
+        const site = response.data.value[0];
+        this.siteId = site.id;
+        console.log(`✅ Sitio encontrado: ${site.displayName}\n`);
+        return site;
+      } else {
+        // Fallback: construir URL manualmente
+        console.warn('⚠️ Sitio no encontrado por búsqueda, usando URL manual...\n');
+        return null;
+      }
+    } catch (error) {
+      console.warn('⚠️ Error buscando sitio:', error.response?.data?.error?.message || error.message);
+      console.log('� Intentando con acceso directo a OneDrive...\n');
+      return null;
+    }
+  }
+
+  /**
    * Listar archivos en SharePoint
    */
   async listFiles(folderPath = '') {
@@ -54,7 +102,19 @@ class SharePointSync {
     try {
       console.log(`📁 Listando archivos en SharePoint...\n`);
       
-      const url = `https://graph.microsoft.com/v1.0/sites/root/drive/root${folderPath}:/children`;
+      // Para SharePoint personal (OneDrive), el patrón de sitio es:
+      // /sites/usuario@organizacion.onmicrosoft.com
+      // O podemos usar el email local del usuario
+      
+      const userEmailLocal = this.config.userEmail.split('@')[0]; // job.llanos
+      const domain = 'trimpulso.onmicrosoft.com'; // Dominio de Entra ID
+      
+      // Formato correcto: /sites/usuario@dominio
+      const siteUrl = `/sites/${this.config.userEmail.split('@')[0]}@${domain}`;
+      
+      let url = `https://graph.microsoft.com/v1.0/sites/trimpulso-my.sharepoint.com${siteUrl}/drive/root/children`;
+      
+      console.log(`🔗 Intentando acceso a: ${siteUrl}`);
       
       const response = await axios.get(url, {
         headers: {
@@ -64,17 +124,30 @@ class SharePointSync {
       });
 
       if (response.data.value && response.data.value.length > 0) {
+        console.log(`\n📂 Archivos encontrados:\n`);
         response.data.value.forEach((item, index) => {
           const icon = item.folder ? '📁' : '📄';
-          console.log(`${index + 1}. ${icon} ${item.name}`);
+          const size = item.size ? ` (${(item.size / 1024 / 1024).toFixed(2)} MB)` : '';
+          console.log(`${index + 1}. ${icon} ${item.name}${size}`);
         });
       } else {
         console.log('No hay archivos en esta ubicación');
       }
 
-      return response.data.value;
+      return response.data.value || [];
     } catch (error) {
       console.error('❌ Error listando archivos:', error.response?.data?.error?.message || error.message);
+      
+      // Mostrar detalles del error para debugging
+      if (error.response?.data?.error?.details) {
+        console.error('📋 Detalles:', error.response.data.error.details);
+      }
+      
+      console.log('\n💡 Soluciones:');
+      console.log('1. Verifica que la aplicación tiene permisos: Sites.Read.All');
+      console.log('2. Confirma que el usuario y dominio en config.json son correctos');
+      console.log('3. Asegúrate de que el archivo Contabilidad.xlsx existe en SharePoint');
+      
       return [];
     }
   }
@@ -145,6 +218,9 @@ async function main() {
 
     // Autenticar
     await sync.authenticate();
+
+    // Obtener drive del usuario
+    await sync.getUserDrive();
 
     // Listar archivos
     const files = await sync.listFiles();
