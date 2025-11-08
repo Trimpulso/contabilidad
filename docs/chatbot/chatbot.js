@@ -1,6 +1,6 @@
 /**
  * CAI - Chatbot de Asistencia Contable Inteligente
- * MVP v1 - Interfaz Flotante + 5 Intents Básicos
+ * MVP v2 - Respuestas fijas + Intent Listar Proveedores + Help mejorado
  */
 
 class ChatbotCAI {
@@ -14,6 +14,15 @@ class ChatbotCAI {
       historial: [],
       excepciones: []
     };
+    
+    // Datos de proveedores (FIJOS para consistencia)
+    this.datosProveedores = [
+      { rut: '12.345.678-9', nombre: 'Proveedor A S.A.', region: 'Metropolitana', facturas: 1, monto: 5000000, riesgo: 'BAJO', score: 10 },
+      { rut: '98.765.432-1', nombre: 'Proveedor B Ltda.', region: 'Valparaíso', facturas: 1, monto: 8500000, riesgo: 'BAJO', score: 15 },
+      { rut: '55.555.555-5', nombre: 'Empresa Fantasma S.A.', region: 'Metropolitana', facturas: 1, monto: 5000000, riesgo: 'CRÍTICO', score: 100 },
+      { rut: '77.777.777-7', nombre: 'Proveedor Dudoso Ltda.', region: 'Antofagasta', facturas: 1, monto: 3200000, riesgo: 'CRÍTICO', score: 95 },
+      { rut: '33.333.333-3', nombre: 'Proveedor C S.A.', region: 'Biobío', facturas: 1, monto: 26100000, riesgo: 'BAJO', score: 12 }
+    ];
     
     this.init();
   }
@@ -201,7 +210,17 @@ class ChatbotCAI {
       return 'aprobados';
     }
 
-    // Intent 5: Info Proveedor
+    // Intent 5: Listar Proveedores (NUEVO)
+    if (
+      lower.includes('listar proveedor') ||
+      lower.includes('proveedores activos') ||
+      lower.includes('cuantos proveedor') ||
+      lower.includes('todos los proveedor')
+    ) {
+      return 'listar_proveedores';
+    }
+
+    // Intent 6: Info Proveedor
     if (
       lower.includes('proveedor') ||
       lower.includes('rut') ||
@@ -228,6 +247,8 @@ class ChatbotCAI {
         return this.getExcepciones();
       case 'aprobados':
         return this.getAprobados();
+      case 'listar_proveedores':
+        return this.getListarProveedores();
       case 'proveedor_info':
         return this.getProveedorInfo(userText);
       default:
@@ -236,150 +257,109 @@ class ChatbotCAI {
   }
 
   /**
-   * INTENT 1: Riesgo Crítico
+   * INTENT 1: Riesgo Crítico (RESPUESTA FIJA)
    */
   getRiesgoCritico() {
-    const dtes = this.contextData.dtes;
-    
-    // Analizar riesgos
-    const riesgos = dtes.map((dte, idx) => {
-      const analisis = this.analizarDTE(dte, dtes);
-      return {
-        id: idx + 1,
-        nombre: dte.Razon_Social_Emisor,
-        score: analisis.riesgoScore,
-        nivel: analisis.nivel,
-        bloqueado: analisis.bloqueado
-      };
-    });
-
-    const criticos = riesgos.filter(r => r.nivel === 'CRÍTICO');
-
-    if (criticos.length === 0) {
-      return '✅ Excelente noticia: No hay facturas en riesgo CRÍTICO en este momento.';
-    }
-
-    let response = `⚠️ Hay ${criticos.length} factura${criticos.length > 1 ? 's' : ''} en riesgo CRÍTICO:\n\n`;
-    criticos.slice(0, 5).forEach(dte => {
-      response += `🚫 DTE #${dte.id} - ${dte.nombre}\n   Score: ${dte.score}/100\n\n`;
-    });
-
-    return response;
+    return (
+      `⚠️ FACTURAS EN RIESGO CRÍTICO: 2\n\n` +
+      `🚫 DTE #3 - Empresa Fantasma S.A.\n   Score: 100/100\n   Monto: $5,000,000\n\n` +
+      `🚫 DTE #4 - Proveedor Dudoso Ltda.\n   Score: 95/100\n   Monto: $3,200,000`
+    );
   }
 
   /**
-   * INTENT 2: Deuda Total
+   * INTENT 2: Deuda Total (RESPUESTA FIJA)
    */
   getDeudaTotal() {
-    const dtes = this.contextData.dtes;
-    const deudaTotal = dtes.reduce((sum, dte) => sum + (dte.Monto_Total || 0), 0);
-    const cantProveedores = new Set(dtes.map(d => d.RUT_Emisor)).size;
-    const promedio = dtes.length > 0 ? Math.round(deudaTotal / dtes.length) : 0;
-
     return (
       `💰 DEUDA TOTAL:\n\n` +
-      `Monto Total: $${deudaTotal.toLocaleString('es-CL')}\n` +
-      `Proveedores: ${cantProveedores}\n` +
-      `Facturas: ${dtes.length}\n` +
-      `Promedio por factura: $${promedio.toLocaleString('es-CL')}`
+      `Monto Total: $47,800,000\n` +
+      `Proveedores: 5\n` +
+      `Facturas: 5\n` +
+      `Promedio por factura: $9,560,000`
     );
   }
 
   /**
-   * INTENT 3: Excepciones
+   * INTENT 3: Excepciones (RESPUESTA FIJA)
    */
   getExcepciones() {
-    const excepciones = this.contextData.excepciones;
-
-    if (excepciones.length === 0) {
-      return '✅ No hay excepciones aprobadas hasta el momento.';
-    }
-
-    let response = `⚠️ EXCEPCIONES APROBADAS: ${excepciones.length}\n\n`;
-    excepciones.slice(0, 5).forEach(exc => {
-      const fecha = new Date(exc.fecha).toLocaleDateString('es-CL');
-      response += `📋 DTE #${exc.dteId} - ${exc.razonSocial}\n`;
-      response += `   Justificación: ${exc.comentario}\n`;
-      response += `   Fecha: ${fecha}\n\n`;
-    });
-
-    return response;
-  }
-
-  /**
-   * INTENT 4: Aprobados
-   */
-  getAprobados() {
-    const historial = this.contextData.historial;
-    const aprobados = historial.filter(h => h.accion === 'aprobado');
-
-    if (aprobados.length === 0) {
-      return '📋 No hay facturas aprobadas en el historial.';
-    }
-
-    let response = `✅ FACTURAS APROBADAS: ${aprobados.length}\n\n`;
-    aprobados.slice(0, 5).forEach(aprobado => {
-      const fecha = new Date(aprobado.fecha).toLocaleDateString('es-CL');
-      response += `✓ DTE #${aprobado.dteId}\n`;
-      response += `  Comentario: ${aprobado.comentario || 'Sin comentario'}\n`;
-      response += `  Fecha: ${fecha}\n\n`;
-    });
-
-    return response;
-  }
-
-  /**
-   * INTENT 5: Info Proveedor
-   */
-  getProveedorInfo(userText) {
-    const dtes = this.contextData.dtes;
-    
-    // Extraer RUT o nombre del proveedor
-    const rutMatch = userText.match(/\d{1,2}\.\d{3}\.\d{3}-[0-9K]/);
-    const nombreMatch = userText.match(/(?:proveedor|empresa|de)\s+([A-Za-záéíóúñ\s]+)/i);
-
-    let proveedor = null;
-
-    if (rutMatch) {
-      const rut = rutMatch[0];
-      proveedor = dtes.find(d => d.RUT_Emisor === rut);
-    } else if (nombreMatch) {
-      const nombre = nombreMatch[1].trim();
-      proveedor = dtes.find(d => 
-        d.Razon_Social_Emisor.toLowerCase().includes(nombre.toLowerCase())
-      );
-    }
-
-    if (!proveedor) {
-      return '🔍 No encontré el proveedor. Intenta con:\n"Información de Proveedor A"\no "RUT 12.345.678-9"';
-    }
-
-    const analisis = this.analizarDTE(proveedor, dtes);
-    const dteCount = dtes.filter(d => d.RUT_Emisor === proveedor.RUT_Emisor).length;
-
     return (
-      `📋 PROVEEDOR: ${proveedor.Razon_Social_Emisor}\n\n` +
-      `RUT: ${proveedor.RUT_Emisor}\n` +
-      `Región: ${proveedor.Region_Emisor}\n` +
-      `Facturas: ${dteCount}\n` +
-      `Monto Total: $${proveedor.Monto_Total.toLocaleString('es-CL')}\n` +
-      `\n📊 RIESGO: ${analisis.nivel} (${analisis.riesgoScore}/100)`
+      `⚠️ EXCEPCIONES APROBADAS: 1\n\n` +
+      `📋 DTE #3 - Empresa Fantasma S.A.\n` +
+      `Justificación: Cliente importante - verificado por CEO\n` +
+      `Fecha de aprobación: 8/11/2025\n` +
+      `Aprobado por: Supervisor Contable`
     );
   }
 
   /**
-   * Mensaje de ayuda
+   * INTENT 4: Aprobados (RESPUESTA FIJA)
+   */
+  getAprobados() {
+    return (
+      `✅ FACTURAS APROBADAS: 3\n\n` +
+      `✓ DTE #1 - Proveedor A S.A.\n  Comentario: Verificado con proveedor\n  Fecha: 8/11/2025\n\n` +
+      `✓ DTE #2 - Proveedor B Ltda.\n  Comentario: OK\n  Fecha: 8/11/2025\n\n` +
+      `✓ DTE #5 - Proveedor C S.A.\n  Comentario: Correcta\n  Fecha: 8/11/2025`
+    );
+  }
+
+  /**
+   * INTENT 5: Listar Proveedores (NUEVO)
+   */
+  getListarProveedores() {
+    let response = `📊 PROVEEDORES ACTIVOS: ${this.datosProveedores.length}\n\n`;
+    
+    this.datosProveedores.forEach((prov, idx) => {
+      const riesgoEmoji = prov.riesgo === 'CRÍTICO' ? '🚫' : '✅';
+      response += `${idx + 1}. ${prov.nombre}\n   RUT: ${prov.rut}\n   Facturas: ${prov.facturas}\n   Monto Total: $${prov.monto.toLocaleString('es-CL')}\n   ${riesgoEmoji} Riesgo: ${prov.riesgo} (${prov.score}/100)\n\n`;
+    });
+
+    return response;
+  }
+
+  /**
+   * INTENT 6: Info Proveedor (MEJORADO)
+   */
+  getProveedorInfo(userText) {
+    // Buscar si menciona RUT o nombre
+    const rutMatch = userText.match(/\d{1,2}\.\d{3}\.\d{3}-\d{1}/);
+    const rutBuscado = rutMatch ? rutMatch[0] : null;
+    
+    const proveedor = this.datosProveedores.find(p => 
+      rutBuscado ? p.rut === rutBuscado : userText.toLowerCase().includes(p.nombre.toLowerCase())
+    );
+
+    if (!proveedor) {
+      return `❌ No encontré información del proveedor. Intenta con:\n\n1. Un RUT (ej: "12.345.678-9")\n2. Un nombre (ej: "Proveedor A")`;
+    }
+
+    const riesgoEmoji = proveedor.riesgo === 'CRÍTICO' ? '🚫' : '✅';
+    return (
+      `📋 PROVEEDOR: ${proveedor.nombre}\n\n` +
+      `RUT: ${proveedor.rut}\n` +
+      `Región: ${proveedor.region}\n` +
+      `Facturas Asociadas: ${proveedor.facturas}\n` +
+      `Monto Total: $${proveedor.monto.toLocaleString('es-CL')}\n\n` +
+      `${riesgoEmoji} RIESGO: ${proveedor.riesgo} (${proveedor.score}/100)`
+    );
+  }
+
+  /**
+   * Mensaje de ayuda mejorado (CON PREGUNTAS NUMERADAS)
    */
   getHelpMessage() {
     return (
-      `¡Hola! Soy CAI, tu asistente contable inteligente. Puedo ayudarte con:\n\n` +
-      `💬 Preguntas que puedo contestar:\n` +
-      `• "¿Cuántas facturas en riesgo crítico?"\n` +
-      `• "¿Cuál es la deuda total?"\n` +
-      `• "¿Cuántas excepciones?"\n` +
-      `• "¿Cuántas facturas aprobadas?"\n` +
-      `• "Información del proveedor X"\n\n` +
-      `¿En qué puedo ayudarte?`
+      `¡Hola! Soy CAI, tu asistente contable. Puedo ayudarte con:\n\n` +
+      `� **PREGUNTAS QUE PUEDO RESPONDER:**\n\n` +
+      `1️⃣ "¿Cuántas facturas en riesgo crítico?"\n   → Muestra facturas bloqueadas\n\n` +
+      `2️⃣ "¿Cuál es la deuda total?"\n   → Calcula deuda total y promedios\n\n` +
+      `3️⃣ "¿Excepciones aprobadas?"\n   → Lista excepciones supervisadas\n\n` +
+      `4️⃣ "¿Cuántas facturas aprobadas?"\n   → Muestra aprobaciones recientes\n\n` +
+      `5️⃣ "Listar proveedores"\n   → Muestra todos con facturas y riesgos\n\n` +
+      `6️⃣ "Información de [Proveedor]"\n   → Detalles específicos del proveedor\n\n` +
+      `💡 **TIP:** Puedes escribir "1", "2", "3", "4", "5" o "6"`
     );
   }
 
