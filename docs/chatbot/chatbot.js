@@ -17,13 +17,12 @@ class ChatbotCAI {
       excepciones: []
     };
     
-    // Datos de proveedores (FIJOS para consistencia)
+    // Datos de proveedores (FIJOS para consistencia - ACTUALIZADOS CON DATOS REALES)
     this.datosProveedores = [
-      { rut: '12.345.678-9', nombre: 'Proveedor A S.A.', region: 'Metropolitana', facturas: 1, monto: 5000000, riesgo: 'BAJO', score: 10 },
-      { rut: '98.765.432-1', nombre: 'Proveedor B Ltda.', region: 'Valparaíso', facturas: 1, monto: 8500000, riesgo: 'BAJO', score: 15 },
-      { rut: '55.555.555-5', nombre: 'Empresa Fantasma S.A.', region: 'Metropolitana', facturas: 1, monto: 5000000, riesgo: 'CRÍTICO', score: 100 },
-      { rut: '77.777.777-7', nombre: 'Proveedor Dudoso Ltda.', region: 'Antofagasta', facturas: 1, monto: 3200000, riesgo: 'CRÍTICO', score: 95 },
-      { rut: '33.333.333-3', nombre: 'Proveedor C S.A.', region: 'Biobío', facturas: 1, monto: 26100000, riesgo: 'BAJO', score: 12 }
+      { rut: '76192801-K', nombre: 'Proveedor A S.A.', region: 'Metropolitana', facturas: 2, monto: 714000, riesgo: 'BAJO', score: 10 },
+      { rut: '77654321-9', nombre: 'Proveedor B Ltda.', region: 'Metropolitana', facturas: 1, monto: 595000, riesgo: 'BAJO', score: 15 },
+      { rut: '88999888-7', nombre: 'Empresa Fantasma SpA', region: 'Magallanes', facturas: 1, monto: 17850000, riesgo: 'CRÍTICO', score: 100 },
+      { rut: '99888777-K', nombre: 'Proveedor Dudoso Ltda.', region: 'Arica', facturas: 1, monto: 29750000, riesgo: 'CRÍTICO', score: 95 }
     ];
     
     this.init();
@@ -269,26 +268,26 @@ class ChatbotCAI {
   }
 
   /**
-   * INTENT 1: Riesgo Crítico (RESPUESTA FIJA)
+   * INTENT 1: Riesgo Crítico (RESPUESTA FIJA - DATOS REALES)
    */
   getRiesgoCritico() {
     return (
       `⚠️ FACTURAS EN RIESGO CRÍTICO: 2\n\n` +
-      `🚫 DTE #3 - Empresa Fantasma S.A.\n   Score: 100/100\n   Monto: $5,000,000\n\n` +
-      `🚫 DTE #4 - Proveedor Dudoso Ltda.\n   Score: 95/100\n   Monto: $3,200,000`
+      `🚫 DTE #3 - Empresa Fantasma SpA\n   Score: 100/100\n   Monto: $17,850,000\n   RUT: 88999888-7\n\n` +
+      `🚫 DTE #4 - Proveedor Dudoso Ltda.\n   Score: 95/100\n   Monto: $29,750,000\n   RUT: 99888777-K`
     );
   }
 
   /**
-   * INTENT 2: Deuda Total (RESPUESTA FIJA)
+   * INTENT 2: Deuda Total (RESPUESTA FIJA - DATOS REALES)
    */
   getDeudaTotal() {
     return (
       `💰 DEUDA TOTAL:\n\n` +
-      `Monto Total: $47,800,000\n` +
-      `Proveedores: 5\n` +
+      `Monto Total: $48,909,000\n` +
+      `Proveedores: 4\n` +
       `Facturas: 5\n` +
-      `Promedio por factura: $9,560,000`
+      `Promedio por factura: $9,781,800`
     );
   }
 
@@ -306,26 +305,26 @@ class ChatbotCAI {
   }
 
   /**
-   * INTENT 4: Aprobados (RESPUESTA FIJA)
+   * INTENT 4: Aprobados (RESPUESTA FIJA - DATOS REALES)
    */
   getAprobados() {
     return (
       `✅ FACTURAS APROBADAS: 3\n\n` +
-      `✓ DTE #1 - Proveedor A S.A.\n  Comentario: Verificado con proveedor\n  Fecha: 8/11/2025\n\n` +
-      `✓ DTE #2 - Proveedor B Ltda.\n  Comentario: OK\n  Fecha: 8/11/2025\n\n` +
-      `✓ DTE #5 - Proveedor C S.A.\n  Comentario: Correcta\n  Fecha: 8/11/2025`
+      `✓ DTE #1 - Proveedor A S.A. (RUT: 76192801-K)\n  Monto: $595,000\n  Estado: Registrada\n\n` +
+      `✓ DTE #2 - Proveedor B Ltda. (RUT: 77654321-9)\n  Monto: $595,000\n  Estado: Registrada\n\n` +
+      `✓ DTE #5 - Proveedor A S.A. (RUT: 76192801-K)\n  Monto: $119,000\n  Estado: Registrada`
     );
   }
 
   /**
-   * INTENT 5: Listar Proveedores (NUEVO)
+   * INTENT 5: Listar Proveedores (NUEVO - DATOS REALES)
    */
   getListarProveedores() {
     let response = `📊 PROVEEDORES ACTIVOS: ${this.datosProveedores.length}\n\n`;
     
     this.datosProveedores.forEach((prov, idx) => {
       const riesgoEmoji = prov.riesgo === 'CRÍTICO' ? '🚫' : '✅';
-      response += `${idx + 1}. ${prov.nombre}\n   RUT: ${prov.rut}\n   Facturas: ${prov.facturas}\n   Monto Total: $${prov.monto.toLocaleString('es-CL')}\n   ${riesgoEmoji} Riesgo: ${prov.riesgo} (${prov.score}/100)\n\n`;
+      response += `${idx + 1}. ${prov.nombre}\n   RUT: ${prov.rut}\n   Región: ${prov.region}\n   Facturas: ${prov.facturas}\n   Monto Total: $${prov.monto.toLocaleString('es-CL')}\n   ${riesgoEmoji} Riesgo: ${prov.riesgo} (${prov.score}/100)\n\n`;
     });
 
     return response;
