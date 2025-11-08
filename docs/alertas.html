@@ -935,7 +935,135 @@
     }
 
     async function exportPDF() {
-      alert('📄 Exportar PDF con historial de excepciones está en desarrollo. Por ahora, usa Ctrl+P para imprimir.');
+      const { jsPDF } = window.jspdf;
+      
+      try {
+        const doc = new jsPDF('p', 'mm', 'a4');
+        let yPos = 20;
+        
+        // Título
+        doc.setFontSize(18);
+        doc.setTextColor(31, 41, 55);
+        doc.text('� REPORTE DE ALERTAS DE SEGURIDAD', 20, yPos);
+        yPos += 15;
+        
+        // Fecha
+        doc.setFontSize(10);
+        doc.setTextColor(107, 114, 128);
+        const ahora = new Date().toLocaleString('es-CL');
+        doc.text(`Generado: ${ahora}`, 20, yPos);
+        yPos += 10;
+        
+        // Línea divisoria
+        doc.setDrawColor(200, 213, 225);
+        doc.line(20, yPos, 190, yPos);
+        yPos += 8;
+        
+        // Estadísticas
+        doc.setFontSize(12);
+        doc.setTextColor(31, 41, 55);
+        doc.text('📊 ESTADÍSTICAS GLOBALES', 20, yPos);
+        yPos += 8;
+        
+        doc.setFontSize(10);
+        const stats = {
+          'DTEs Analizados': appState.registrosActuales.length,
+          'Bloqueados (CRÍTICO)': appState.registrosActuales.filter(r => r.analisisSeguridad.nivel === 'CRÍTICO').length,
+          'Requieren Aprobación (MEDIO)': appState.registrosActuales.filter(r => r.analisisSeguridad.nivel === 'MEDIO').length,
+          'Aprobados': appState.historialAcciones.filter(a => a.accion === 'aprobado').length,
+          'Rechazados': appState.historialAcciones.filter(a => a.accion === 'rechazado').length,
+          'Excepciones Aprobadas': appState.excepcionesAprobadas.length
+        };
+        
+        Object.entries(stats).forEach(([label, value]) => {
+          doc.text(`${label}: ${value}`, 25, yPos);
+          yPos += 6;
+        });
+        
+        yPos += 5;
+        doc.line(20, yPos, 190, yPos);
+        yPos += 8;
+        
+        // Historial de Acciones
+        if (appState.historialAcciones.length > 0) {
+          doc.setFontSize(12);
+          doc.setTextColor(31, 41, 55);
+          doc.text('📜 HISTORIAL DE ACCIONES', 20, yPos);
+          yPos += 8;
+          
+          const historialReverse = [...appState.historialAcciones].reverse().slice(0, 10);
+          historialReverse.forEach(item => {
+            const fecha = new Date(item.fecha).toLocaleString('es-CL');
+            const accion = item.accion.toUpperCase();
+            
+            doc.setFontSize(9);
+            doc.setTextColor(71, 85, 105);
+            doc.text(`DTE #${item.dteId} - ${accion}`, 25, yPos);
+            yPos += 4;
+            
+            if (item.comentario) {
+              doc.setTextColor(128, 128, 128);
+              doc.setFontSize(8);
+              const comentarioWrapped = doc.splitTextToSize(item.comentario, 150);
+              comentarioWrapped.forEach(line => {
+                doc.text(line, 30, yPos);
+                yPos += 4;
+              });
+            }
+            
+            doc.setTextColor(200, 200, 200);
+            doc.text(fecha, 160, yPos - (item.comentario ? 4 : 0));
+            yPos += 6;
+          });
+        }
+        
+        yPos += 5;
+        doc.line(20, yPos, 190, yPos);
+        yPos += 8;
+        
+        // Excepciones
+        if (appState.excepcionesAprobadas.length > 0) {
+          doc.setFontSize(12);
+          doc.setTextColor(31, 41, 55);
+          doc.text('⚠️ EXCEPCIONES APROBADAS', 20, yPos);
+          yPos += 8;
+          
+          appState.excepcionesAprobadas.slice(0, 5).forEach(exc => {
+            doc.setFontSize(9);
+            doc.setTextColor(207, 102, 0);
+            doc.text(`DTE #${exc.dteId} - ${exc.razonSocial}`, 25, yPos);
+            yPos += 4;
+            
+            if (exc.comentario) {
+              doc.setTextColor(128, 128, 128);
+              doc.setFontSize(8);
+              const comentarioWrapped = doc.splitTextToSize(exc.comentario, 150);
+              comentarioWrapped.forEach(line => {
+                doc.text(line, 30, yPos);
+                yPos += 4;
+              });
+            }
+            
+            yPos += 4;
+            
+            // Nueva página si es necesario
+            if (yPos > 250) {
+              doc.addPage();
+              yPos = 20;
+            }
+          });
+        }
+        
+        // Pie de página
+        doc.setFontSize(8);
+        doc.setTextColor(156, 163, 175);
+        doc.text('Sistema Contable Inteligente v2.0 - Reporte Confidencial', 20, doc.internal.pageSize.height - 10);
+        
+        doc.save(`alertas_seguridad_${Date.now()}.pdf`);
+      } catch (error) {
+        console.error('Error generando PDF:', error);
+        alert('Error al generar PDF: ' + error.message);
+      }
     }
   </script>
 </body>
