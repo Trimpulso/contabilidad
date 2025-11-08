@@ -36,7 +36,11 @@
 **🌐 Dashboard en vivo:**  
 👉 https://trimpulso.github.io/Contabilidad/
 
-**📚 Documentación API:**  
+**� Dashboard de Alertas de Seguridad:**  
+👉 https://trimpulso.github.io/Contabilidad/alertas.html  
+⚠️ **Requiere servidor backend corriendo en local** — Ver [INSTRUCCIONES_DASHBOARD.md](INSTRUCCIONES_DASHBOARD.md)
+
+**�📚 Documentación API:**  
 👉 [API.md](docs/API.md)
 
 **📂 Repositorio:**  
