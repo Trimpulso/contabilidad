@@ -162,6 +162,228 @@
       padding: 3rem;
       color: #64748b;
     }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-dialog {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .modal-dialog h3 {
+      margin-top: 0;
+      color: #0f172a;
+    }
+
+    .modal-dialog textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 100px;
+      margin: 1rem 0;
+    }
+
+    .modal-dialog-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+
+    .modal-dialog-buttons button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-aprobar {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-aprobar:hover {
+      background: #059669;
+    }
+
+    .btn-rechazar {
+      background: #dc2626;
+      color: white;
+    }
+
+    .btn-rechazar:hover {
+      background: #b91c1c;
+    }
+
+    .btn-cancelar {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn-cancelar:hover {
+      background: #cbd5e1;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .btn-small {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn-small-aprobar {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-small-aprobar:hover {
+      background: #059669;
+    }
+
+    .btn-small-rechazar {
+      background: #dc2626;
+      color: white;
+    }
+
+    .btn-small-rechazar:hover {
+      background: #b91c1c;
+    }
+
+    .btn-small-excepcion {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .btn-small-excepcion:hover {
+      background: #d97706;
+    }
+
+    .historial-item {
+      padding: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: grid;
+      grid-template-columns: 80px 1fr 150px;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .historial-item:last-child {
+      border-bottom: none;
+    }
+
+    .historial-fecha {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .historial-accion {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .historial-accion-tipo {
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .historial-accion-detalle {
+      font-size: 0.85rem;
+      color: #475569;
+    }
+
+    .historial-status {
+      text-align: right;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    .status-aprobado {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .status-rechazado {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .status-excepcion {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .status-pendiente {
+      background: #dbeafe;
+      color: #0284c7;
+    }
+
+    .excepcion-card {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
+    }
+
+    .excepcion-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .excepcion-card-header strong {
+      color: #f59e0b;
+    }
+
+    .excepcion-card-comment {
+      font-size: 0.9rem;
+      color: #1e293b;
+      padding: 0.5rem 0;
+      font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -191,9 +413,31 @@
     </div>
   </div>
 
+  <!-- Modal para Aprobación/Rechazo -->
+  <div id="accionModal" class="modal-overlay">
+    <div class="modal-dialog">
+      <h3 id="modalTitle">Acción</h3>
+      <p id="modalMessage" style="color: #64748b;"></p>
+      <textarea id="modalComment" placeholder="Ingresa comentario (opcional)..."></textarea>
+      <div class="modal-dialog-buttons">
+        <button class="btn-cancelar" onclick="cerrarModal()">Cancelar</button>
+        <button class="btn-rechazar" id="btnModalRechazar" onclick="confirmarRechazar()" style="display:none;">Rechazar</button>
+        <button class="btn-aprobar" id="btnModalAprobar" onclick="confirmarAprobar()" style="display:none;">Aprobar</button>
+        <button class="btn-small-excepcion" id="btnModalExcepcion" onclick="confirmarExcepcion()" style="display:none; background: #f59e0b;">Aprobar con Excepción</button>
+      </div>
+    </div>
+  </div>
+
   <section class="controls" style="margin-bottom: 2rem;">
     <button id="btnRefresh">🔄 Actualizar</button>
     <button id="btnExportPDF">📄 Exportar Reporte PDF</button>
+    <select id="filterStatus" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;">
+      <option value="todos">📊 Todos los Estados</option>
+      <option value="pendiente">⏳ Pendientes</option>
+      <option value="aprobado">✅ Aprobados</option>
+      <option value="rechazado">❌ Rechazados</option>
+      <option value="excepcion">⚠️ Excepciones</option>
+    </select>
   </section>
 
   <section style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
@@ -202,9 +446,21 @@
       <!-- Se llena dinámicamente -->
     </div>
 
+    <!-- Sección de Excepciones Aprobadas -->
+    <div id="excepcionesContainer" style="display: none; margin-bottom: 2rem;">
+      <h3 style="color: #f59e0b; margin-bottom: 1rem;">⚠️ Excepciones Aprobadas</h3>
+      <div id="excepcionesList"></div>
+    </div>
+
     <!-- Lista de Alertas -->
     <div id="alertsContainer" class="loading">
       Cargando alertas...
+    </div>
+
+    <!-- Historial de Acciones -->
+    <div id="historialContainer" style="margin-top: 2rem; display: none;">
+      <h3 style="color: #0284c7; margin-bottom: 1rem;">📜 Historial de Acciones</h3>
+      <div id="historialList" style="background: white; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);"></div>
     </div>
   </section>
 
@@ -213,32 +469,16 @@
   </footer>
 
   <script>
+    // Estado global mejorado
     const appState = {
       token: localStorage.getItem('token'),
       user: null,
-      apiBaseUrl: localStorage.getItem('apiBaseUrl') || (window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000/api' 
-        : 'http://localhost:3000/api')  // Por defecto usa localhost
+      registrosActuales: [],
+      historialAcciones: JSON.parse(localStorage.getItem('historialAcciones') || '[]'),
+      excepcionesAprobadas: JSON.parse(localStorage.getItem('excepcionesAprobadas') || '[]'),
+      accionActual: null,
+      filtroActual: 'todos'
     };
-
-    // Detectar si estamos en GitHub Pages
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    
-    // Si estamos en GitHub Pages y no hay URL configurada, mostrar opción de configuración
-    if (isGitHubPages && !localStorage.getItem('apiBaseUrl')) {
-      const userUrl = prompt(
-        'Dashboard en GitHub Pages detectado.\n\n' +
-        'Ingresa la URL del servidor backend\n' +
-        '(ej: http://localhost:3000/api o http://tu-servidor:3000/api)\n\n' +
-        'Por defecto: http://localhost:3000/api',
-        'http://localhost:3000/api'
-      );
-      
-      if (userUrl) {
-        localStorage.setItem('apiBaseUrl', userUrl);
-        appState.apiBaseUrl = userUrl;
-      }
-    }
 
     // Inicialización
     document.addEventListener('DOMContentLoaded', () => {
@@ -249,6 +489,10 @@
     function setupEventListeners() {
       document.getElementById('btnRefresh').addEventListener('click', loadAlerts);
       document.getElementById('btnExportPDF').addEventListener('click', exportPDF);
+      document.getElementById('filterStatus').addEventListener('change', (e) => {
+        appState.filtroActual = e.target.value;
+        renderAlerts(appState.registrosActuales);
+      });
     }
 
     async function loadAlerts() {
@@ -262,8 +506,12 @@
         const registrosConAnalisis = registros.map((reg, idx) => ({
           id: idx + 1,
           ...reg,
-          analisisSeguridad: analizarDTELocal(reg, registros)
+          analisisSeguridad: analizarDTELocal(reg, registros),
+          estado: determinarEstado(idx + 1),
+          comentario: obtenerComentario(idx + 1)
         }));
+
+        appState.registrosActuales = registrosConAnalisis;
 
         // Filtrar registros con alertas
         const registrosConAlertas = registrosConAnalisis.filter(r => 
@@ -275,17 +523,127 @@
           total: registros.length,
           bloqueados: registrosConAlertas.filter(r => r.analisisSeguridad.nivel === 'CRÍTICO').length,
           requierenAprobacion: registrosConAlertas.filter(r => r.analisisSeguridad.nivel === 'MEDIO').length,
-          proveedoresConocidos: new Set(registros.map(r => r.RUT_Emisor)).size,
+          aprobados: appState.historialAcciones.filter(a => a.accion === 'aprobado').length,
+          rechazados: appState.historialAcciones.filter(a => a.accion === 'rechazado').length,
+          excepciones: appState.excepcionesAprobadas.length,
           scorePromedio: registrosConAnalisis.reduce((sum, r) => sum + r.analisisSeguridad.riesgoScore, 0) / registros.length
         };
 
         renderStats(stats);
         renderAlerts(registrosConAlertas);
+        renderHistorial();
       } catch (error) {
         console.error('Error cargando alertas:', error);
         document.getElementById('alertsContainer').innerHTML = 
           '<p style="color: red;">Error al cargar datos. ' + error.message + '</p>';
       }
+    }
+
+    function determinarEstado(dteId) {
+      const excepcion = appState.excepcionesAprobadas.find(e => e.dteId === dteId);
+      if (excepcion) return 'excepcion';
+
+      const accion = appState.historialAcciones.find(a => a.dteId === dteId);
+      return accion ? accion.accion : 'pendiente';
+    }
+
+    function obtenerComentario(dteId) {
+      const accion = appState.historialAcciones.find(a => a.dteId === dteId);
+      return accion ? accion.comentario : '';
+    }
+
+    function filtrarRegistros(registros) {
+      if (appState.filtroActual === 'todos') return registros;
+      return registros.filter(r => r.estado === appState.filtroActual);
+    }
+
+    function registrarAccion(dteId, accion, comentario = '') {
+      const ahora = new Date();
+      appState.historialAcciones.push({
+        dteId,
+        accion,
+        comentario,
+        fecha: ahora.toISOString(),
+        usuario: 'Revisor'
+      });
+      localStorage.setItem('historialAcciones', JSON.stringify(appState.historialAcciones));
+    }
+
+    function registrarExcepcion(dteId, razonSocial, comentario = '') {
+      const ahora = new Date();
+      appState.excepcionesAprobadas.push({
+        dteId,
+        razonSocial,
+        comentario,
+        fecha: ahora.toISOString(),
+        usuario: 'Revisor'
+      });
+      localStorage.setItem('excepcionesAprobadas', JSON.stringify(appState.excepcionesAprobadas));
+    }
+
+    function abrirModalAccion(dteId, tipo) {
+      const overlay = document.getElementById('accionModal');
+      const titleEl = document.getElementById('modalTitle');
+      const messageEl = document.getElementById('modalMessage');
+      const btnAprobar = document.getElementById('btnModalAprobar');
+      const btnRechazar = document.getElementById('btnModalRechazar');
+      const btnExcepcion = document.getElementById('btnModalExcepcion');
+      const textarea = document.getElementById('modalComment');
+
+      const registro = appState.registrosActuales.find(r => r.id === dteId);
+
+      appState.accionActual = { dteId, tipo };
+      textarea.value = '';
+
+      if (tipo === 'aprobar') {
+        titleEl.textContent = '✅ Aprobar DTE';
+        messageEl.textContent = `¿Confirmar aprobación de DTE #${dteId} - ${registro.Razon_Social_Emisor}?`;
+        btnAprobar.style.display = 'inline-block';
+        btnRechazar.style.display = 'none';
+        btnExcepcion.style.display = 'none';
+      } else if (tipo === 'rechazar') {
+        titleEl.textContent = '❌ Rechazar DTE';
+        messageEl.textContent = `¿Confirmar rechazo de DTE #${dteId} - ${registro.Razon_Social_Emisor}?`;
+        btnRechazar.style.display = 'inline-block';
+        btnAprobar.style.display = 'none';
+        btnExcepcion.style.display = 'none';
+      } else if (tipo === 'excepcion') {
+        titleEl.textContent = '⚠️ Aprobar con Excepción';
+        messageEl.textContent = `Nota: Este DTE tiene riesgo ${registro.analisisSeguridad.nivel}. ¿Deseas aprobarlo de todas formas?`;
+        btnExcepcion.style.display = 'inline-block';
+        btnAprobar.style.display = 'none';
+        btnRechazar.style.display = 'none';
+      }
+
+      overlay.classList.add('active');
+    }
+
+    function cerrarModal() {
+      document.getElementById('accionModal').classList.remove('active');
+      appState.accionActual = null;
+    }
+
+    function confirmarAprobar() {
+      const comentario = document.getElementById('modalComment').value;
+      registrarAccion(appState.accionActual.dteId, 'aprobado', comentario);
+      cerrarModal();
+      loadAlerts();
+    }
+
+    function confirmarRechazar() {
+      const comentario = document.getElementById('modalComment').value;
+      registrarAccion(appState.accionActual.dteId, 'rechazado', comentario);
+      cerrarModal();
+      loadAlerts();
+    }
+
+    function confirmarExcepcion() {
+      const comentario = document.getElementById('modalComment').value;
+      const registro = appState.registrosActuales.find(r => r.id === appState.accionActual.dteId);
+      registrarExcepcion(appState.accionActual.dteId, registro.Razon_Social_Emisor, comentario);
+      registrarAccion(appState.accionActual.dteId, 'excepcion', `Excepción: ${comentario}`);
+      cerrarModal();
+      loadAlerts();
     }
 
     function analizarDTELocal(dte, historico) {
@@ -411,8 +769,12 @@
           <div class="stat-label">⚠️ Requieren Aprobación</div>
         </div>
         <div class="stat-card" style="border-top: 4px solid #10b981;">
-          <div class="stat-value">${stats.proveedoresConocidos}</div>
-          <div class="stat-label">Proveedores Conocidos</div>
+          <div class="stat-value">${stats.aprobados}</div>
+          <div class="stat-label">✅ Aprobados</div>
+        </div>
+        <div class="stat-card" style="border-top: 4px solid #8b5cf6;">
+          <div class="stat-value">${stats.excepciones}</div>
+          <div class="stat-label">⚠️ Excepciones</div>
         </div>
         <div class="stat-card" style="border-top: 4px solid #6366f1;">
           <div class="stat-value">${stats.scorePromedio.toFixed(1)}</div>
@@ -424,21 +786,71 @@
     function renderAlerts(records) {
       const container = document.getElementById('alertsContainer');
       
-      if (records.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #64748b;">✅ No se detectaron alertas de seguridad</p>';
+      // Filtrar según estado seleccionado
+      const filtrados = filtrarRegistros(records);
+
+      if (filtrados.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #64748b;">✅ No hay registros en este filtro</p>';
         return;
       }
 
-      container.innerHTML = records.map((record, index) => {
+      // Renderizar excepciones si las hay
+      const excepciones = appState.excepcionesAprobadas;
+      if (excepciones.length > 0 && appState.filtroActual !== 'excepcion') {
+        const excepcionesContainer = document.getElementById('excepcionesContainer');
+        excepcionesContainer.style.display = 'block';
+        excepcionesContainer.innerHTML = `
+          <h3 style="color: #f59e0b; margin-bottom: 1rem;">⚠️ Excepciones Aprobadas (${excepciones.length})</h3>
+          <div id="excepcionesList">
+            ${excepciones.map(exc => `
+              <div class="excepcion-card">
+                <div class="excepcion-card-header">
+                  <strong>DTE #${exc.dteId} - ${exc.razonSocial}</strong>
+                  <span class="status-badge status-excepcion">Aprobado con Excepción</span>
+                </div>
+                <div class="excepcion-card-comment">${exc.comentario || 'Sin comentario adicional'}</div>
+                <small style="color: #64748b;">📅 ${new Date(exc.fecha).toLocaleString('es-CL')}</small>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (excepciones.length === 0) {
+        document.getElementById('excepcionesContainer').style.display = 'none';
+      }
+
+      container.innerHTML = filtrados.map((record) => {
         const analisis = record.analisisSeguridad;
-        
+        const estadoClase = `status-${record.estado}`;
+        const estadoTexto = {
+          'pendiente': '⏳ Pendiente',
+          'aprobado': '✅ Aprobado',
+          'rechazado': '❌ Rechazado',
+          'excepcion': '⚠️ Excepción'
+        }[record.estado] || '❓ Desconocido';
+
+        let botonesHTML = '';
+        if (record.estado === 'pendiente') {
+          botonesHTML = `
+            <div class="action-buttons">
+              <button class="btn-small btn-small-aprobar" onclick="abrirModalAccion(${record.id}, 'aprobar')">✅ Aprobar</button>
+              <button class="btn-small btn-small-rechazar" onclick="abrirModalAccion(${record.id}, 'rechazar')">❌ Rechazar</button>
+              ${analisis.nivel === 'CRÍTICO' ? `<button class="btn-small btn-small-excepcion" onclick="abrirModalAccion(${record.id}, 'excepcion')">⚠️ Excepción</button>` : ''}
+            </div>
+          `;
+        } else if (record.estado !== 'excepcion') {
+          botonesHTML = `<p style="font-size: 0.85rem; color: #64748b; margin: 0.5rem 0;">💬 ${record.comentario || 'Sin comentario'}</p>`;
+        }
+
         return `
           <div class="alert-card ${analisis.nivel}">
             <div class="alert-header">
               <h3 style="margin: 0;">DTE #${record.id} - ${record.Razon_Social_Emisor}</h3>
-              <span class="alert-badge badge-${analisis.nivel}">
-                ${analisis.nivel} (${analisis.riesgoScore}/100)
-              </span>
+              <div style="display: flex; gap: 1rem; align-items: center;">
+                <span class="alert-badge badge-${analisis.nivel}">
+                  ${analisis.nivel} (${analisis.riesgoScore}/100)
+                </span>
+                <span class="status-badge ${estadoClase}">${estadoTexto}</span>
+              </div>
             </div>
 
             <div class="alert-detail">
@@ -463,7 +875,7 @@
                 <div class="alert-detail-value">${record.Estado_RCV}</div>
               </div>
               <div class="alert-detail-item">
-                <div class="alert-detail-label">Bloqueado</div>
+                <div class="alert-detail-label">Bloqueado Automáticamente</div>
                 <div class="alert-detail-value">${analisis.bloqueado ? '🚫 SÍ' : '✅ NO'}</div>
               </div>
             </div>
@@ -476,15 +888,46 @@
                   <div class="alert-content">
                     <div class="alert-tipo">${alerta.tipo}</div>
                     <div class="alert-mensaje">${alerta.mensaje}</div>
-                    <div class="alert-accion">💡 ${alerta.accion}</div>
                   </div>
                 </div>
               `).join('')}
             </div>
 
-            <div class="recommendation">
-              <div class="recommendation-title">📋 Recomendación:</div>
-              <div>${analisis.recomendacion}</div>
+            ${botonesHTML}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderHistorial() {
+      if (appState.historialAcciones.length === 0) {
+        document.getElementById('historialContainer').style.display = 'none';
+        return;
+      }
+
+      document.getElementById('historialContainer').style.display = 'block';
+      const container = document.getElementById('historialList');
+      
+      const historialOrdenado = [...appState.historialAcciones].reverse();
+      
+      container.innerHTML = historialOrdenado.map(item => {
+        const fecha = new Date(item.fecha);
+        const fechaFormato = fecha.toLocaleString('es-CL');
+        const iconoAccion = {
+          'aprobado': '✅',
+          'rechazado': '❌',
+          'excepcion': '⚠️'
+        }[item.accion] || '❓';
+
+        return `
+          <div class="historial-item">
+            <div class="historial-fecha">${fechaFormato}</div>
+            <div class="historial-accion">
+              <div class="historial-accion-tipo">${iconoAccion} DTE #${item.dteId}</div>
+              <div class="historial-accion-detalle">${item.comentario || 'Sin comentarios'}</div>
+            </div>
+            <div class="historial-status">
+              <span class="status-badge status-${item.accion}">${item.accion.toUpperCase()}</span>
             </div>
           </div>
         `;
@@ -492,7 +935,7 @@
     }
 
     async function exportPDF() {
-      alert('Función de exportación PDF en desarrollo. Usa el botón de impresión del navegador (Ctrl+P) por ahora.');
+      alert('📄 Exportar PDF con historial de excepciones está en desarrollo. Por ahora, usa Ctrl+P para imprimir.');
     }
   </script>
 </body>
