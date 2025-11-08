@@ -132,6 +132,11 @@ class SharePointSync {
       const outputPath = path.join(dataDir, fileName);
       fs.writeFileSync(outputPath, contentRes.data);
       console.log(`✅ Descargado en: ${outputPath}`);
+
+      // Si es Excel, parsearlo a JSON
+      if (/\.xlsx$/i.test(fileName)) {
+        await this.parseExcel(outputPath);
+      }
       return outputPath;
     } catch (error) {
       const message = error.response?.data?.error?.message || error.message;
@@ -145,6 +150,31 @@ class SharePointSync {
         console.log('\n💡 Falta consentimiento de permisos para la aplicación.');
         console.log('   Requeridos: Files.Read.All y/o Sites.Read.All (permisos de aplicación).');
       }
+      return null;
+    }
+  }
+
+  /**
+   * Parsear archivo Excel y guardar JSON
+   */
+  async parseExcel(filePath) {
+    try {
+      console.log('📊 Parseando Excel a JSON...');
+      const XLSX = require('xlsx');
+      const wb = XLSX.readFile(filePath);
+      const result = {};
+      wb.SheetNames.forEach(name => {
+        const ws = wb.Sheets[name];
+        const rows = XLSX.utils.sheet_to_json(ws, { defval: null });
+        // Limitar a primeros 500 registros por hoja para evitar tamaño excesivo
+        result[name] = rows.slice(0, 500);
+      });
+      const jsonPath = path.join(path.dirname(filePath), 'contabilidad.json');
+      fs.writeFileSync(jsonPath, JSON.stringify({ fuente: path.basename(filePath), generado: new Date().toISOString(), hojas: result }, null, 2));
+      console.log(`✅ JSON generado: ${jsonPath}`);
+      return jsonPath;
+    } catch (err) {
+      console.error('❌ Error parseando Excel:', err.message);
       return null;
     }
   }
