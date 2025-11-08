@@ -331,7 +331,7 @@ class ChatbotCAI {
   }
 
   /**
-   * INTENT 6: Info Proveedor (MEJORADO - BÚSQUEDA FLEXIBLE)
+   * INTENT 6: Info Proveedor (MEJORADO - BÚSQUEDA INTELIGENTE)
    */
   getProveedorInfo(userText) {
     // Buscar si menciona RUT (con formato flexible)
@@ -355,20 +355,32 @@ class ChatbotCAI {
       proveedor = this.datosProveedores.find(p => p.rut.toLowerCase() === rutBuscado.toLowerCase());
     }
 
-    // Si no encuentra por RUT, buscar por nombre (búsqueda flexible)
+    // Si no encuentra por RUT, buscar por nombre (búsqueda inteligente)
     if (!proveedor) {
       const textoBusqueda = userText.toLowerCase();
-      proveedor = this.datosProveedores.find(p => {
-        const nombreBajo = p.nombre.toLowerCase();
-        // Buscar coincidencias parciales
-        const palabras = p.nombre.toLowerCase().split(' ');
-        return palabras.some(palabra => textoBusqueda.includes(palabra)) || 
-               textoBusqueda.includes(nombreBajo);
-      });
+      
+      // Estrategia 1: Buscar coincidencia exacta (ignoring case)
+      proveedor = this.datosProveedores.find(p => 
+        p.nombre.toLowerCase().includes(textoBusqueda) || 
+        textoBusqueda.includes(p.nombre.toLowerCase())
+      );
+      
+      // Estrategia 2: Si no hay coincidencia exacta, buscar por múltiples palabras
+      if (!proveedor) {
+        const palabrasBusqueda = textoBusqueda.split(' ').filter(p => p.length > 2); // Ignorar palabras cortas
+        
+        proveedor = this.datosProveedores.find(p => {
+          const nombreBajo = p.nombre.toLowerCase();
+          // Contar cuántas palabras de búsqueda coinciden
+          const coincidencias = palabrasBusqueda.filter(palabra => nombreBajo.includes(palabra)).length;
+          // Debe coincider al menos 2 palabras o más del 50% de las palabras
+          return coincidencias >= 2 || (palabrasBusqueda.length > 0 && coincidencias === palabrasBusqueda.length);
+        });
+      }
     }
 
     if (!proveedor) {
-      return `❌ No encontré información del proveedor.\n\n📋 Proveedores disponibles:\n1. Proveedor A S.A.\n2. Proveedor B Ltda.\n3. Empresa Fantasma SpA\n4. Proveedor Dudoso Ltda.\n\nIntenta con:\n• Nombre completo: "Empresa Fantasma SpA"\n• RUT: "88999888-7"`;
+      return `❌ No encontré información del proveedor.\n\n📋 Proveedores disponibles:\n1. Proveedor A S.A.\n2. Proveedor B Ltda.\n3. Empresa Fantasma SpA\n4. Proveedor Dudoso Ltda.\n\nIntenta con:\n• Nombre más específico: "Empresa Fantasma SpA"\n• RUT: "88999888-7"`;
     }
 
     const riesgoEmoji = proveedor.riesgo === 'CRÍTICO' ? '🚫' : '✅';
