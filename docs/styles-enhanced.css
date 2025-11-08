@@ -107,3 +107,22 @@ select:focus,input:focus{outline:none;border-color:#0284c7;box-shadow:0 0 0 3px 
   .table-wrapper th,.table-wrapper td{padding:6px 8px}
   .pivot-controls{flex-direction:column}
 }
+
+/* Risk Analysis Styles */
+.risk-card{background:white;border-radius:8px;padding:1rem;margin-bottom:1rem;border-left:4px solid;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.risk-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
+.risk-card-header h4{margin:0;font-size:1rem}
+.risk-score{display:flex;align-items:center;gap:0.5rem;font-weight:600}
+.risk-score-low{color:#10b981}
+.risk-score-medium{color:#f59e0b}
+.risk-score-high{color:#dc2626}
+.risk-rules{display:grid;gap:0.5rem;margin:0.75rem 0}
+.risk-rule-item{display:flex;gap:0.5rem;padding:0.5rem;background:#f9fafb;border-radius:4px;font-size:0.9rem}
+.risk-rule-icon{flex-shrink:0;width:20px}
+.risk-rule-text{flex:1;color:#4b5563}
+.risk-approval-status{padding:0.5rem;border-radius:4px;font-size:0.85rem;font-weight:600;display:inline-block;margin-top:0.5rem}
+.risk-approved{background:#d1fae5;color:#059669}
+.risk-rejected{background:#fee2e2;color:#dc2626}
+.risk-exception{background:#fef3c7;color:#d97706}
+.risk-pending{background:#dbeafe;color:#0284c7}
+

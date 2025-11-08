@@ -4,7 +4,9 @@ const appState = {
   currentSheet: null,
   currentRows: [],
   filteredRows: [],
-  chartInstance: null
+  chartInstance: null,
+  historialAcciones: JSON.parse(localStorage.getItem('historialAcciones') || '[]'),
+  excepcionesAprobadas: JSON.parse(localStorage.getItem('excepcionesAprobadas') || '[]')
 };
 
 // Inicialización
@@ -291,6 +293,9 @@ function buildTable(rows) {
   
   container.innerHTML = '';
   container.appendChild(table);
+  
+  // Análisis de riesgos
+  analizarRiesgos();
 }
 
 // Filtro rápido
@@ -452,3 +457,189 @@ function renderPivotTable() {
   html += '</tbody></table>';
   container.innerHTML = html;
 }
+
+// ====== ANÁLISIS DE RIESGOS ======
+function analizarRiesgos() {
+  const rows = appState.filteredRows;
+  if (!rows.length) return;
+  
+  // Verificar si la hoja es "Hoja1" (datos contables con campos de DTE)
+  const tieneCAmpoDTE = rows[0].hasOwnProperty('RUT_Emisor');
+  
+  if (!tieneCAmpoDTE) {
+    document.getElementById('riskAnalysisSection').style.display = 'none';
+    return;
+  }
+  
+  // Mostrar sección
+  document.getElementById('riskAnalysisSection').style.display = 'block';
+  
+  const container = document.getElementById('riskAnalysisContainer');
+  
+  // Enriquecer datos con análisis
+  const rowsConAnalisis = rows.map((row, idx) => ({
+    id: idx + 1,
+    ...row,
+    analisis: realizarAnalisisRiesgo(row, rows)
+  }));
+  
+  // Renderizar cards de riesgo
+  container.innerHTML = rowsConAnalisis.map(row => renderRiskCard(row)).join('');
+  
+  // Agregar listener para hacer los cards colapsibles
+  document.querySelectorAll('.risk-card-header').forEach(header => {
+    header.style.cursor = 'pointer';
+    header.addEventListener('click', function() {
+      const card = this.closest('.risk-card');
+      const content = card.querySelector('.risk-card-content');
+      content.style.display = content.style.display === 'none' ? 'block' : 'none';
+    });
+  });
+}
+
+function realizarAnalisisRiesgo(dte, historico) {
+  const alertas = [];
+  let riesgoScore = 0;
+  let nivel = 'BAJO';
+
+  // Proveedores conocidos
+  const proveedoresConocidos = new Set(historico.map(r => r.RUT_Emisor));
+  
+  // 1. Emisor nuevo
+  if (!proveedoresConocidos.has(dte.RUT_Emisor)) {
+    alertas.push({ icono: '🆕', regla: 'EMISOR_NUEVO', texto: 'Emisor nuevo sin historial', puntos: 30 });
+    riesgoScore += 30;
+  }
+
+  // 2. Región sospechosa
+  const regionesPermitidas = ['Metropolitana', 'Valparaíso', "O'Higgins"];
+  if (!regionesPermitidas.includes(dte.Region_Emisor)) {
+    alertas.push({ icono: '🌍', regla: 'REGIÓN_SOSPECHOSA', texto: `Región inusual: ${dte.Region_Emisor}`, puntos: 20 });
+    riesgoScore += 20;
+  }
+
+  // 3. Monto anormal
+  if (dte.Monto_Total > 15000000) {
+    alertas.push({ icono: '💰', regla: 'MONTO_ANORMAL', texto: `Monto muy alto: $${dte.Monto_Total.toLocaleString()}`, puntos: 40 });
+    riesgoScore += 40;
+  }
+
+  // 4. Recepción inmediata
+  const fechaEmision = new Date(dte.Fecha_Emision);
+  const fechaRecepcion = new Date(dte.Fecha_Recepcion);
+  const difDias = Math.floor((fechaRecepcion - fechaEmision) / (1000 * 60 * 60 * 24));
+  if (difDias === 0) {
+    alertas.push({ icono: '⚡', regla: 'RECEPCIÓN_INMEDIATA', texto: 'Recepción el mismo día de emisión', puntos: 10 });
+    riesgoScore += 10;
+  }
+
+  // 5. Folio sospechoso
+  if (dte.Folio_DTE === '9999' || dte.Folio_DTE === '0000') {
+    alertas.push({ icono: '🔢', regla: 'FOLIO_SOSPECHOSO', texto: `Folio sospechoso: ${dte.Folio_DTE}`, puntos: 15 });
+    riesgoScore += 15;
+  }
+
+  // 6. Pendiente + alto monto
+  if (dte.Estado_RCV === 'Pendiente' && dte.Monto_Total > 10000000) {
+    alertas.push({ icono: '⚠️', regla: 'PENDIENTE_ALTO_MONTO', texto: 'Estado pendiente con monto elevado', puntos: 25 });
+    riesgoScore += 25;
+  }
+
+  // 7. IVA incorrecto
+  const ivaEsperado = Math.round(dte.Monto_Neto * 0.19);
+  if (dte.Monto_IVA && Math.abs(dte.Monto_IVA - ivaEsperado) > 1000) {
+    alertas.push({ icono: '📊', regla: 'IVA_INCORRECTO', texto: `IVA inconsistente`, puntos: 30 });
+    riesgoScore += 30;
+  }
+
+  // 8. Razón social sospechosa
+  const palabrasSospechosas = ['Fantasma', 'Dudoso', 'Temporal', 'S.A.S.', 'XX'];
+  if (palabrasSospechosas.some(p => dte.Razon_Social_Emisor.includes(p))) {
+    alertas.push({ icono: '🚩', regla: 'RAZÓN_SOCIAL_SOSPECHOSA', texto: `Razón social sospechosa`, puntos: 20 });
+    riesgoScore += 20;
+  }
+
+  // Determinar nivel
+  if (riesgoScore >= 51) nivel = 'CRÍTICO';
+  else if (riesgoScore >= 21) nivel = 'MEDIO';
+  else nivel = 'BAJO';
+
+  return { alertas, riesgoScore, nivel };
+}
+
+function renderRiskCard(row) {
+  const analisis = row.analisis;
+  const estadoHist = appState.historialAcciones.find(a => a.dteId === row.id);
+  const estadoExc = appState.excepcionesAprobadas.find(e => e.dteId === row.id);
+  
+  let estadoHTML = '';
+  if (estadoExc) {
+    estadoHTML = '<span class="risk-approval-status risk-exception">⚠️ EXCEPCIÓN APROBADA</span>';
+  } else if (estadoHist) {
+    const claseEstado = `risk-${estadoHist.accion}`;
+    const textoEstado = { 'aprobado': '✅ APROBADO', 'rechazado': '❌ RECHAZADO' }[estadoHist.accion] || '?';
+    estadoHTML = `<span class="risk-approval-status ${claseEstado}">${textoEstado}</span>`;
+  } else {
+    estadoHTML = '<span class="risk-approval-status risk-pending">⏳ PENDIENTE</span>';
+  }
+
+  const colorBorde = {
+    'BAJO': '#10b981',
+    'MEDIO': '#f59e0b',
+    'CRÍTICO': '#dc2626'
+  }[analisis.nivel];
+
+  const colorScore = {
+    'BAJO': 'risk-score-low',
+    'MEDIO': 'risk-score-medium',
+    'CRÍTICO': 'risk-score-high'
+  }[analisis.nivel];
+
+  return `
+    <div class="risk-card" style="border-left-color: ${colorBorde};">
+      <div class="risk-card-header" title="Click para expandir/contraer">
+        <div>
+          <h4 style="margin: 0;">DTE #${row.id} - ${row.Razon_Social_Emisor}</h4>
+          <small style="color: #64748b;">RUT: ${row.RUT_Emisor} | Folio: ${row.Folio_DTE} | Monto: $${row.Monto_Total.toLocaleString()}</small>
+        </div>
+        <div class="risk-score ${colorScore}">
+          ${analisis.riesgoScore}/100
+        </div>
+      </div>
+      <div class="risk-card-content">
+        <div style="margin-bottom: 0.75rem;">
+          <strong style="color: #0f172a;">Nivel de Riesgo:</strong>
+          <span style="color: ${colorBorde}; font-weight: 600; font-size: 1.1rem;">${analisis.nivel}</span>
+        </div>
+        
+        ${analisis.alertas.length > 0 ? `
+          <div>
+            <strong style="color: #0f172a; display: block; margin-bottom: 0.5rem;">Alertas Detectadas:</strong>
+            <div class="risk-rules">
+              ${analisis.alertas.map(alert => `
+                <div class="risk-rule-item">
+                  <div class="risk-rule-icon">${alert.icono}</div>
+                  <div>
+                    <div style="font-weight: 600; color: #1e293b;">${alert.regla}</div>
+                    <div class="risk-rule-text">${alert.texto} (+${alert.puntos})</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : '<p style="color: #64748b; margin: 0;">No se detectaron alertas</p>'}
+        
+        <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e2e8f0;">
+          <strong style="color: #0f172a;">Estado de Aprobación:</strong><br>
+          ${estadoHTML}
+          ${estadoHist && estadoHist.comentario ? `
+            <div style="margin-top: 0.5rem; padding: 0.5rem; background: #f9fafb; border-radius: 4px; font-size: 0.9rem;">
+              <strong>Comentario:</strong> ${estadoHist.comentario}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
