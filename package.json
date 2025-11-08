@@ -10,7 +10,8 @@
     "test": "cd backend && npm test",
     "setup-sharepoint": "cd connectors/sharepoint && npm install && npm run sync-list",
     "sync-specs": "cd connectors/sharepoint && npm run sync",
-    "db:migrate": "cd database && npm run migrate"
+    "db:migrate": "cd database && npm run migrate",
+    "flags": "node tools/feature-flags.js"
   },
   "keywords": ["contabilidad", "chatbot", "claude", "accounting"],
   "author": "",
