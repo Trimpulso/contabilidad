@@ -1,6 +1,6 @@
 {
   "fuente": "Contabilida.xlsx",
-  "generado": "2025-11-08T04:22:25.115Z",
+  "generado": "2025-11-08T04:41:05.040Z",
   "hojas": {
     "Hoja1": [
       {
@@ -8,8 +8,8 @@
         "Razon_Social_Emisor": "Proveedor A S.A.",
         "Tipo_DTE": 33,
         "Folio_DTE": 12345,
-        "Fecha_Emision": 45931,
-        "Fecha_Recepcion": 45935,
+        "Fecha_Emision": "2025-10-01",
+        "Fecha_Recepcion": "2025-10-05",
         "Monto_Neto": 500000,
         "Monto_IVA": 95000,
         "Monto_Total": 595000,
@@ -21,8 +21,8 @@
         "Razon_Social_Emisor": "Servicios B Ltda.",
         "Tipo_DTE": 33,
         "Folio_DTE": 56789,
-        "Fecha_Emision": 45945,
-        "Fecha_Recepcion": 45946,
+        "Fecha_Emision": "2025-10-15",
+        "Fecha_Recepcion": "2025-10-16",
         "Monto_Neto": 100000,
         "Monto_IVA": 19000,
         "Monto_Total": 119000,
@@ -34,8 +34,8 @@
         "Razon_Social_Emisor": "Almacen C",
         "Tipo_DTE": 61,
         "Folio_DTE": 101,
-        "Fecha_Emision": 45950,
-        "Fecha_Recepcion": 45951,
+        "Fecha_Emision": "2025-10-20",
+        "Fecha_Recepcion": "2025-10-21",
         "Monto_Neto": -50000,
         "Monto_IVA": -9500,
         "Monto_Total": -59500,

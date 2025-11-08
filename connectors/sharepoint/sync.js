@@ -163,11 +163,33 @@ class SharePointSync {
       const XLSX = require('xlsx');
       const wb = XLSX.readFile(filePath);
       const result = {};
+
+      // Función para convertir fecha serial de Excel a ISO
+      const excelDateToISO = (serial) => {
+        if (typeof serial !== 'number' || isNaN(serial)) return serial;
+        // Época de Excel es 1900-01-01, pero hay un bug: 1900 no es bisiesto pero Excel lo considera
+        const excelEpoch = new Date(1900, 0, 1).getTime();
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const date = new Date(excelEpoch + (serial - 2) * msPerDay);
+        if (isNaN(date.getTime())) return serial;
+        return date.toISOString().split('T')[0];
+      };
+
       wb.SheetNames.forEach(name => {
         const ws = wb.Sheets[name];
         const rows = XLSX.utils.sheet_to_json(ws, { defval: null });
-        // Limitar a primeros 500 registros por hoja para evitar tamaño excesivo
-        result[name] = rows.slice(0, 500);
+        // Convertir fechas y limitar a 500 registros
+        result[name] = rows.slice(0, 500).map(row => {
+          const converted = {};
+          for (const [key, value] of Object.entries(row)) {
+            if (key.includes('Fecha')) {
+              converted[key] = excelDateToISO(value);
+            } else {
+              converted[key] = value;
+            }
+          }
+          return converted;
+        });
       });
       const jsonPath = path.join(path.dirname(filePath), 'contabilidad.json');
       fs.writeFileSync(jsonPath, JSON.stringify({ fuente: path.basename(filePath), generado: new Date().toISOString(), hojas: result }, null, 2));
