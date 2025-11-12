@@ -1,8 +1,8 @@
 /**
  * CAI - Chatbot de Asistencia Contable Inteligente
- * MVP v2 - Respuestas fijas + Intent Listar Proveedores + Help mejorado
- * v2.1 - Fix: Shortcuts numéricos (1-6) funcionando
- * Updated: 8/11/2025 14:30
+ * v3.0 HÍBRIDO - Intents fijos + Google Gemini IA
+ * Sistema híbrido: respuestas rápidas (intents) + IA para preguntas complejas
+ * Updated: 11/11/2025
  */
 
 class ChatbotCAI {
@@ -24,6 +24,10 @@ class ChatbotCAI {
       { rut: '88999888-7', nombre: 'Empresa Fantasma SpA', region: 'Magallanes', facturas: 1, monto: 17850000, riesgo: 'CRÍTICO', score: 100 },
       { rut: '99888777-K', nombre: 'Proveedor Dudoso Ltda.', region: 'Arica', facturas: 1, monto: 29750000, riesgo: 'CRÍTICO', score: 95 }
     ];
+    
+    // Inicializar módulo de IA (carga bajo demanda)
+    this.chatbotIA = null;
+    this.modoIA = false; // false = solo intents, true = híbrido
     
     this.init();
   }
@@ -147,20 +151,82 @@ class ChatbotCAI {
     // Mostrar indicador de escritura
     this.showTyping();
 
-    // Procesar respuesta después de 500ms
-    setTimeout(() => {
-      this.processInput(text);
+    // Procesar respuesta después de 500ms (async)
+    setTimeout(async () => {
+      await this.processInput(text);
       this.hideTyping();
     }, 500);
   }
 
   /**
-   * Procesar entrada del usuario
+   * Procesar entrada del usuario (SISTEMA HÍBRIDO)
    */
-  processInput(text) {
+  async processInput(text) {
     const intent = this.detectIntent(text);
-    const response = this.getResponse(intent, text);
-    this.addMessage(response, 'bot');
+    
+    // Si es un intent conocido, respuesta rápida
+    if (intent !== 'desconocido') {
+      const response = this.getResponse(intent, text);
+      this.addMessage(response, 'bot');
+      return;
+    }
+    
+    // Si no es intent conocido y modo IA está activo, usar IA
+    if (this.modoIA) {
+      await this.procesarConIA(text);
+    } else {
+      // Sugerir activar IA
+      const response = `❓ No entendí tu pregunta.\n\n💡 **Sugerencias:**\n• Escribe "help" para ver comandos\n• Escribe "activar ia" para usar IA conversacional\n• Usa shortcuts: 1, 2, 3, 4, 5, 6`;
+      this.addMessage(response, 'bot');
+    }
+  }
+
+  /**
+   * Procesar pregunta con IA (Google Gemini)
+   */
+  async procesarConIA(pregunta) {
+    // Inicializar módulo IA si no existe
+    if (!this.chatbotIA) {
+      if (typeof ChatbotIA === 'undefined') {
+        this.addMessage('⚠️ Módulo IA no cargado. Recarga la página.', 'bot');
+        return;
+      }
+      this.chatbotIA = new ChatbotIA();
+    }
+
+    // Mostrar indicador de carga
+    this.addMessage('🤔 Consultando IA...', 'bot', 'loading');
+
+    try {
+      const resultado = await this.chatbotIA.enviarPregunta(pregunta);
+      
+      // Remover mensaje de carga
+      this.removeLoadingMessage();
+
+      if (resultado.exito) {
+        const prefix = resultado.fromCache ? '💾 ' : '🤖 ';
+        this.addMessage(prefix + resultado.respuesta, 'bot');
+        
+        // Mostrar estadísticas si no es desde caché
+        if (!resultado.fromCache) {
+          const stats = this.chatbotIA.getEstadisticas();
+          console.log('📊 Stats IA:', stats);
+        }
+      } else {
+        this.addMessage(resultado.error, 'bot');
+      }
+    } catch (error) {
+      this.removeLoadingMessage();
+      this.addMessage('❌ Error procesando con IA: ' + error.message, 'bot');
+    }
+  }
+
+  /**
+   * Remover mensaje de loading
+   */
+  removeLoadingMessage() {
+    const loadingMsgs = document.querySelectorAll('.message.loading');
+    loadingMsgs.forEach(msg => msg.remove());
   }
 
   /**
@@ -168,6 +234,33 @@ class ChatbotCAI {
    */
   detectIntent(text) {
     const lower = text.toLowerCase().trim();
+
+    // COMANDOS DE SISTEMA IA
+    if (lower === 'activar ia' || lower === 'ia on' || lower === 'enable ia') {
+      this.modoIA = true;
+      this.addMessage('✅ **Modo IA activado**\n\nAhora puedes hacer preguntas en lenguaje natural.\n\n💡 Ejemplo: "¿Qué proveedores tienen mayor riesgo y por qué?"', 'bot');
+      return 'system_command';
+    }
+    
+    if (lower === 'desactivar ia' || lower === 'ia off' || lower === 'disable ia') {
+      this.modoIA = false;
+      this.addMessage('✅ **Modo IA desactivado**\n\nVolviendo a comandos rápidos (1-6).', 'bot');
+      return 'system_command';
+    }
+
+    if (lower === 'stats ia' || lower === 'estadisticas') {
+      if (this.chatbotIA) {
+        const stats = this.chatbotIA.getEstadisticas();
+        const msg = `📊 **Estadísticas IA**\n\n` +
+                   `• Requests: ${stats.requestsRealizados}/${stats.requestsRealizados + stats.requestsRestantes}\n` +
+                   `• Caché: ${stats.cacheSize} respuestas\n` +
+                   `• API Key: ${stats.apiKeyConfigurada ? '✅ Configurada' : '❌ Falta configurar'}`;
+        this.addMessage(msg, 'bot');
+      } else {
+        this.addMessage('⚠️ Módulo IA no inicializado. Escribe "activar ia" primero.', 'bot');
+      }
+      return 'system_command';
+    }
 
     // SHORTCUTS POR NÚMERO
     if (lower === '1' || lower === 'uno') return 'riesgo_critico';
@@ -398,16 +491,23 @@ class ChatbotCAI {
    * Mensaje de ayuda mejorado (CON PREGUNTAS NUMERADAS)
    */
   getHelpMessage() {
+    const modoActual = this.modoIA ? '✅ IA Activa' : '❌ Solo Comandos';
+    
     return (
-      `¡Hola! Soy CAI, tu asistente contable. Puedo ayudarte con:\n\n` +
-      `� **PREGUNTAS QUE PUEDO RESPONDER:**\n\n` +
-      `1️⃣ "¿Cuántas facturas en riesgo crítico?"\n   → Muestra facturas bloqueadas\n\n` +
-      `2️⃣ "¿Cuál es la deuda total?"\n   → Calcula deuda total y promedios\n\n` +
-      `3️⃣ "¿Excepciones aprobadas?"\n   → Lista excepciones supervisadas\n\n` +
-      `4️⃣ "¿Cuántas facturas aprobadas?"\n   → Muestra aprobaciones recientes\n\n` +
-      `5️⃣ "Listar proveedores"\n   → Muestra todos con facturas y riesgos\n\n` +
-      `6️⃣ "Información de [Proveedor]"\n   → Detalles específicos del proveedor\n\n` +
-      `💡 **TIP:** Puedes escribir "1", "2", "3", "4", "5" o "6"`
+      `¡Hola! Soy CAI v3.0, tu asistente contable inteligente.\n\n` +
+      `🤖 **MODO ACTUAL:** ${modoActual}\n\n` +
+      `📋 **COMANDOS RÁPIDOS:**\n\n` +
+      `1️⃣ Riesgo crítico → Facturas bloqueadas\n` +
+      `2️⃣ Deuda total → Cálculo total\n` +
+      `3️⃣ Excepciones → Aprobaciones supervisadas\n` +
+      `4️⃣ Aprobados → Facturas aprobadas\n` +
+      `5️⃣ Listar proveedores → Todos con riesgos\n` +
+      `6️⃣ Info proveedor → Detalles específicos\n\n` +
+      `🧠 **MODO IA (BETA):**\n` +
+      `• "activar ia" → Habilitar preguntas naturales\n` +
+      `• "desactivar ia" → Volver a comandos\n` +
+      `• "stats ia" → Ver estadísticas de uso\n\n` +
+      `💡 **TIP:** Escribe números (1-6) para respuestas rápidas`
     );
   }
 
