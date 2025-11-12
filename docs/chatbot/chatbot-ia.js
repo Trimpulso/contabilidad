@@ -215,34 +215,78 @@ class ChatbotIA {
   }
 
   /**
-   * Construir prompt con contexto RAG
+   * Construir prompt con contexto RAG COMPLETO y optimizado
    */
   construirPrompt(pregunta) {
-    const contextoJSON = JSON.stringify({
-      proveedores: this.contextoProveedores,
-      totalProveedores: this.contextoProveedores.length,
-      totalDTEs: this.contextoDTEs.length,
-      montoTotal: this.contextoProveedores.reduce((sum, p) => sum + p.montoTotal, 0)
-    }, null, 2);
+    // RAG COMPLETO: Incluir DTEs detallados
+    const dtesPorRiesgo = this.contextoDTEs.map(dte => ({
+      numero: dte.Numero_DTE,
+      proveedor: dte.Proveedor,
+      rut: dte.RUT_Emisor,
+      fecha: dte.Fecha_Emision,
+      monto: dte.Monto_Neto,
+      iva: dte.Monto_IVA,
+      estado: dte.Estado,
+      riesgo: dte.Nivel_Riesgo,
+      score: dte.Score_Riesgo
+    })).sort((a, b) => b.score - a.score);
 
-    return `Eres CAI (Chatbot de Asistencia Contable Inteligente), un asistente experto en contabilidad y análisis de riesgos de proveedores.
+    const contextoCompleto = {
+      resumen: {
+        totalProveedores: this.contextoProveedores.length,
+        totalDTEs: this.contextoDTEs.length,
+        montoTotal: this.contextoProveedores.reduce((sum, p) => sum + p.montoTotal, 0),
+        riesgoCritico: dtesPorRiesgo.filter(d => d.score >= 80).length,
+        riesgoMedio: dtesPorRiesgo.filter(d => d.score >= 40 && d.score < 80).length,
+        riesgoBajo: dtesPorRiesgo.filter(d => d.score < 40).length
+      },
+      proveedores: this.contextoProveedores.map(p => ({
+        nombre: p.nombre,
+        rut: p.rut,
+        facturas: p.facturas,
+        montoTotal: p.montoTotal,
+        riesgoPrincipal: p.riesgo,
+        scorePrincipal: p.score
+      })).sort((a, b) => b.scorePrincipal - a.scorePrincipal),
+      dtesCriticos: dtesPorRiesgo.filter(d => d.score >= 80).slice(0, 5),
+      dtesPorFecha: dtesPorRiesgo.slice(0, 10)
+    };
 
-**CONTEXTO DE DATOS:**
+    const contextoJSON = JSON.stringify(contextoCompleto, null, 2);
+
+    // PROMPT OPTIMIZADO: Específico para análisis contable
+    return `Eres CAI (Chatbot de Asistencia Contable Inteligente), experto en análisis de riesgos de proveedores y contabilidad.
+
+**CONTEXTO DE DATOS ACTUALES:**
 ${contextoJSON}
 
-**REGLAS:**
+**TU ROL:**
+- Analizar patrones de riesgo en proveedores
+- Dar recomendaciones accionables
+- Explicar por qué hay riesgos
+- Sugerir acciones inmediatas
+
+**REGLAS DE RESPUESTA:**
 1. Responde SIEMPRE en español
-2. Usa los datos del contexto para responder
-3. Sé conciso y profesional (máximo 200 palabras)
-4. Usa formato Markdown para listas y énfasis
-5. Si no hay datos suficientes, indícalo claramente
-6. Menciona RUTs cuando sea relevante
-7. Destaca riesgos críticos con emojis (⚠️, 🚨)
+2. Usa datos reales del contexto (RUTs, montos, fechas)
+3. Sé específico: menciona nombres de proveedores y números de DTEs
+4. Estructura tu respuesta así:
+   
+   **Análisis:**
+   - Punto clave 1
+   - Punto clave 2
+   - Punto clave 3
+   
+   **Recomendaciones:**
+   - Acción 1 (específica)
+   - Acción 2 (específica)
+5. Si hay riesgos críticos, destácalos con emojis (🚨, ⚠️)
+6. Máximo 200 palabras
 
 **PREGUNTA DEL USUARIO:**
 ${pregunta}
 
-**TU RESPUESTA:**`;
+**TU RESPUESTA (Análisis + Recomendaciones):**`;
   }
 
   /**
