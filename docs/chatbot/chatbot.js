@@ -164,6 +164,11 @@ class ChatbotCAI {
   async processInput(text) {
     const intent = this.detectIntent(text);
     
+    // Si es comando de sistema, ya fue procesado en detectIntent
+    if (intent === 'system_command') {
+      return;
+    }
+    
     // Si es un intent conocido, respuesta rápida
     if (intent !== 'desconocido') {
       const response = this.getResponse(intent, text);
@@ -176,7 +181,7 @@ class ChatbotCAI {
       await this.procesarConIA(text);
     } else {
       // Sugerir activar IA
-      const response = `❓ No entendí tu pregunta.\n\n💡 **Sugerencias:**\n• Escribe "help" para ver comandos\n• Escribe "activar ia" para usar IA conversacional\n• Usa shortcuts: 1, 2, 3, 4, 5, 6`;
+      const response = `❓ No entendí tu pregunta.\n\n💡 **Opciones:**\n• Escribe **"activar ia"** para preguntas naturales\n• O usa: 1, 2, 3, 4, 5, 6`;
       this.addMessage(response, 'bot');
     }
   }
@@ -238,26 +243,26 @@ class ChatbotCAI {
     // COMANDOS DE SISTEMA IA
     if (lower === 'activar ia' || lower === 'ia on' || lower === 'enable ia') {
       this.modoIA = true;
-      this.addMessage('✅ **Modo IA activado**\n\nAhora puedes hacer preguntas en lenguaje natural.\n\n💡 Ejemplo: "¿Qué proveedores tienen mayor riesgo y por qué?"', 'bot');
+      this.addMessage('✅ **Modo IA Activado**\n\nAhora puedo responder preguntas naturales sobre tus datos.', 'bot');
       return 'system_command';
     }
     
     if (lower === 'desactivar ia' || lower === 'ia off' || lower === 'disable ia') {
       this.modoIA = false;
-      this.addMessage('✅ **Modo IA desactivado**\n\nVolviendo a comandos rápidos (1-6).', 'bot');
+      this.addMessage('✅ **Modo IA Desactivado**\n\nVolviendo a comandos rápidos (1-6).', 'bot');
       return 'system_command';
     }
 
     if (lower === 'stats ia' || lower === 'estadisticas') {
       if (this.chatbotIA) {
         const stats = this.chatbotIA.getEstadisticas();
-        const msg = `📊 **Estadísticas IA**\n\n` +
-                   `• Requests: ${stats.requestsRealizados}/${stats.requestsRealizados + stats.requestsRestantes}\n` +
-                   `• Caché: ${stats.cacheSize} respuestas\n` +
-                   `• API Key: ${stats.apiKeyConfigurada ? '✅ Configurada' : '❌ Falta configurar'}`;
+        const msg = `📊 **Estadísticas IA:**\n` +
+                   `Requests: ${stats.requestsRealizados}/${stats.requestsRealizados + stats.requestsRestantes}\n` +
+                   `Caché: ${stats.cacheSize} respuestas\n` +
+                   `API: ${stats.apiKeyConfigurada ? '✅' : '❌'}`;
         this.addMessage(msg, 'bot');
       } else {
-        this.addMessage('⚠️ Módulo IA no inicializado. Escribe "activar ia" primero.', 'bot');
+        this.addMessage('⚠️ Módulo IA no inicializado.', 'bot');
       }
       return 'system_command';
     }
@@ -494,20 +499,21 @@ class ChatbotCAI {
     const modoActual = this.modoIA ? '✅ IA Activa' : '❌ Solo Comandos';
     
     return (
-      `¡Hola! Soy CAI v3.0, tu asistente contable inteligente.\n\n` +
-      `🤖 **MODO ACTUAL:** ${modoActual}\n\n` +
-      `📋 **COMANDOS RÁPIDOS:**\n\n` +
-      `1️⃣ Riesgo crítico → Facturas bloqueadas\n` +
-      `2️⃣ Deuda total → Cálculo total\n` +
-      `3️⃣ Excepciones → Aprobaciones supervisadas\n` +
-      `4️⃣ Aprobados → Facturas aprobadas\n` +
-      `5️⃣ Listar proveedores → Todos con riesgos\n` +
-      `6️⃣ Info proveedor → Detalles específicos\n\n` +
-      `🧠 **MODO IA (BETA):**\n` +
-      `• "activar ia" → Habilitar preguntas naturales\n` +
-      `• "desactivar ia" → Volver a comandos\n` +
-      `• "stats ia" → Ver estadísticas de uso\n\n` +
-      `💡 **TIP:** Escribe números (1-6) para respuestas rápidas`
+      `¡Hola! Soy **CAI v3.0**, tu asistente contable.\n\n` +
+      `**🎯 MODO ACTUAL:** ${modoActual}\n\n` +
+      `**📋 COMANDOS RÁPIDOS (Respuesta instantánea):**\n` +
+      `1️⃣ - Riesgo crítico\n` +
+      `2️⃣ - Deuda total\n` +
+      `3️⃣ - Excepciones\n` +
+      `4️⃣ - Aprobados\n` +
+      `5️⃣ - Listar proveedores\n` +
+      `6️⃣ - Info de proveedor\n\n` +
+      `**🧠 ACTIVAR IA (Preguntas naturales):**\n` +
+      `Escribe: **"activar ia"**\n\n` +
+      `Luego podrás preguntar:\n` +
+      `• "¿Qué proveedores tienen riesgo?"` +
+      `\n• "Dame resumen de Empresa Fantasma"\n` +
+      `• "¿Cuál es el total de facturas críticas?"`
     );
   }
 
@@ -516,23 +522,30 @@ class ChatbotCAI {
    */
   showWelcomeMessage() {
     setTimeout(() => {
-      this.addMessage(this.getHelpMessage(), 'bot');
+      const welcome = `¡Hola! Soy **CAI**, tu asistente contable.\n\n**Prueba:**\n• Escribe **1** para riesgos\n• Escribe **5** para ver proveedores\n• Escribe **"activar ia"** para preguntas`;
+      this.addMessage(welcome, 'bot');
     }, 300);
   }
 
   /**
    * Agregar mensaje al chat
    */
-  addMessage(text, sender = 'bot') {
+  addMessage(text, sender = 'bot', className = '') {
     const messagesDiv = document.getElementById('chatbotMessages');
     if (!messagesDiv) return;
 
     const messageDiv = document.createElement('div');
-    messageDiv.className = `chatbot-message ${sender}`;
+    messageDiv.className = `chatbot-message ${sender} ${className}`;
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'chatbot-message-content';
-    contentDiv.textContent = text;
+    
+    // Convertir Markdown simple a HTML
+    let html = text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')  // **bold**
+      .replace(/\n/g, '<br>');                            // saltos de línea
+    
+    contentDiv.innerHTML = html;
 
     messageDiv.appendChild(contentDiv);
     messagesDiv.appendChild(messageDiv);
